@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/home"
+        android:icon="@drawable/home_icon"
+        android:title="@string/home"
+        android:contentDescription="@string/home"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction" />
+    <item
+        android:id="@+id/analysis"
+        android:icon="@drawable/analysis_icon"
+        android:title="@string/analysis"
+        android:contentDescription="@string/analysis"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/budgets"
+        android:icon="@drawable/budget_icon"
+        android:title="@string/budgets"
+        android:contentDescription="@string/budgets"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/profile"
+        android:icon="@drawable/profile_icon"
+        android:title="@string/profile"
+        android:contentDescription="@string/profile"
+        app:showAsAction="always"/>
+</menu>

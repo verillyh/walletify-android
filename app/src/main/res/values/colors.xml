@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="green">#4CAF50</color>
+    <color name="green_light">#0C4CAF50</color>
     <color name="off_black">#212529</color>
-    <color name="lighter_black">#2D3339</color>
+    <color name="lighter_black">#282E33</color>
     <color name="white">#FFFFFF</color>
     <color name="off_yellow">#D4E157</color>
     <color name="blue">#1E90FF</color>

@@ -1,7 +1,21 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Walletify" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorSurface">@color/lighter_black</item>
+        <!--        <item name="actionBarTheme">@style/TopAppBar.Style</item>-->
+        <item name="bottomNavigationStyle">@style/App.NavigationView</item>
     </style>
+    <style name="App.NavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="materialThemeOverlay">@style/App.NavigationView.ThemeOverlay</item>
+    </style>
+    <style name="App.NavigationView.ThemeOverlay" parent="">
+        <item name="colorOnSurface">@color/green</item>
+        <item name="colorSurfaceContainer">@color/lighter_black</item>
+        <item name="colorOnSurfaceVariant">@color/white</item>
+        <item name="colorOnSecondaryContainer">@color/green</item>
+        <item name="colorSecondaryContainer">@color/green_light</item>
+    </style>
+<!--    <style name="TopAppBar.Style" parent="ThemeOverlay.Material3.Dark.ActionBar">-->
+<!--        <item name="colorSurface">@color/lighter_black</item>-->
+<!--    </style>-->
 </resources>
