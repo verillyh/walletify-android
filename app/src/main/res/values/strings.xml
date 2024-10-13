@@ -9,7 +9,7 @@
     <string name="sort_by">Sort by</string>
     <string name="asc">ASC</string>
     <string name="desc">DESC</string>
-    <string name="home">Home</string> 
+    <string name="home">Home</string>
     <string name="analysis">Analysis</string>
     <string name="budgets">Budgets</string>
     <string name="profile">Profile</string>
@@ -51,4 +51,6 @@
     <string name="transportation">Transportation</string>
     <string name="education">Education</string>
     <string name="wallet_menu">Wallet Menu</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

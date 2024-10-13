@@ -2,8 +2,11 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Walletify" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorSurface">@color/lighter_black</item>
+        <item name="fontFamily">@font/main_font</item>
+        <item name="colorPrimary">@color/green</item>
         <!--        <item name="actionBarTheme">@style/TopAppBar.Style</item>-->
         <item name="bottomNavigationStyle">@style/App.NavigationView</item>
+        <item name="materialButtonOutlinedStyle">@style/App.Button.Outlined</item>
     </style>
     <style name="App.NavigationView" parent="Widget.Material3.BottomNavigationView">
         <item name="materialThemeOverlay">@style/App.NavigationView.ThemeOverlay</item>
@@ -14,6 +17,19 @@
         <item name="colorOnSurfaceVariant">@color/white</item>
         <item name="colorOnSecondaryContainer">@color/green</item>
         <item name="colorSecondaryContainer">@color/green_light</item>
+    </style>
+    <style name="App.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="colorOnSurface">@color/white</item>
+    </style>
+    <style name="App.Button.Filter" parent="Widget.Material3.Button">
+        <item name="android:padding">0dp</item>
+        <item name="android:paddingEnd">5dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="iconTint">@color/white</item>
+        <item name="itemShapeAppearance">@style/ShapeAppearance.Material3.Corner.None</item>
+        <item name="icon">@drawable/caret_icon</item>
+        <item name="iconGravity">end</item>
+        <item name="iconPadding">4dp</item>
     </style>
 <!--    <style name="TopAppBar.Style" parent="ThemeOverlay.Material3.Dark.ActionBar">-->
 <!--        <item name="colorSurface">@color/lighter_black</item>-->

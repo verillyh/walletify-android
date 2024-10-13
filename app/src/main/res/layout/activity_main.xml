@@ -22,12 +22,18 @@
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/off_black"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-</androidx.core.widget.NestedScrollView>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/off_black"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/main_fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/navigation" />
+    </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
