@@ -9,11 +9,11 @@ import androidx.recyclerview.widget.RecyclerView
 
 class TransactionItemAdapter(val data: List<TransactionItem>): RecyclerView.Adapter<TransactionItemAdapter.ViewHolder>() {
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
-        val image = view.findViewById<ImageView>(R.id.item_image)
-        val category = view.findViewById<TextView>(R.id.item_category)
-        val cost = view.findViewById<TextView>(R.id.item_cost)
-        val itemNote = view.findViewById<TextView>(R.id.item_note)
-        val datetime = view.findViewById<TextView>(R.id.item_datetime)
+        val image = view.findViewById<ImageView>(R.id.transaction_image)
+        val category = view.findViewById<TextView>(R.id.transaction_category)
+        val cost = view.findViewById<TextView>(R.id.transaction_total)
+        val itemNote = view.findViewById<TextView>(R.id.transaction_note)
+        val datetime = view.findViewById<TextView>(R.id.transaction_datetime)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -17,10 +16,10 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [Home.newInstance] factory method to
+ * Use the [Budgets.newInstance] factory method to
  * create an instance of this fragment.
  */
-class Home : Fragment() {
+class Budgets : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -37,26 +36,23 @@ class Home : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val layout = inflater.inflate(R.layout.fragment_home, container, false)
+        val layout = inflater.inflate(R.layout.fragment_budgets, container, false)
+        val budgetItemContainer = layout.findViewById<RecyclerView>(R.id.budget_container)
+        val data = mutableListOf<BudgetItem>()
 
-        val transactionList = layout.findViewById<RecyclerView>(R.id.transaction_recycler_view)
-        val data = mutableListOf<TransactionItem>()
-
-        // Simulate transactions
-        for (i in 1..20) {
-            data.add(TransactionItem(
+        // Simulate list of budgets
+        for (i in 1..15) {
+            data.add(BudgetItem(
                 R.drawable.shopping_icon,
                 getString(R.string.shopping),
-                30.1,
-                "Chicken, eggs",
-                "Today, 14:21"
+                i * 25.0,
+                25.0 - i
             ))
         }
 
-        val adapter = TransactionItemAdapter(data)
-        transactionList.layoutManager = LinearLayoutManager(activity)
-        transactionList.adapter = adapter
-
+        val adapter = BudgetItemAdapter(data)
+        budgetItemContainer.layoutManager = LinearLayoutManager(activity)
+        budgetItemContainer.adapter = adapter
 
         return layout
     }
@@ -68,12 +64,12 @@ class Home : Fragment() {
          *
          * @param param1 Parameter 1.
          * @param param2 Parameter 2.
-         * @return A new instance of fragment Home.
+         * @return A new instance of fragment Budgets.
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            Home().apply {
+            Budgets().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)

@@ -3,28 +3,28 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/home_nav"
+        android:id="@+id/home"
         android:icon="@drawable/home_icon"
         android:title="@string/home"
         android:contentDescription="@string/home"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction" />
     <item
-        android:id="@+id/analysis_nav"
+        android:id="@+id/analysis"
         android:icon="@drawable/analysis_icon"
         android:title="@string/analysis"
         android:contentDescription="@string/analysis"
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/budgets_nav"
+        android:id="@+id/budgets"
         android:icon="@drawable/budget_icon"
         android:title="@string/budgets"
         android:contentDescription="@string/budgets"
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/profile_nav"
+        android:id="@+id/profile"
         android:icon="@drawable/profile_icon"
         android:title="@string/profile"
         android:contentDescription="@string/profile"
