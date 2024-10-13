@@ -13,24 +13,32 @@
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_marginTop="25dp"
+        android:layout_marginBottom="10dp"
         app:srcCompat="@drawable/avatar_sample"
         app:shapeAppearanceOverlay="@style/roundedImageView" />
-    <TextView
-        android:id="@+id/user_name"
+    <LinearLayout
+        android:id="@+id/on_edit_hide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="10dp"
-        android:text="Mary Cruz"
-        android:textColor="@color/white"
-        android:textSize="20sp"/>
-    <TextView
-        android:id="@+id/user_edit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
-        android:text="@string/edit"
-        android:textSize="16sp"
-        android:textColor="@color/blue" />
+        android:orientation="vertical"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="Mary Cruz"
+            android:textColor="@color/white"
+            android:textSize="20sp"/>
+        <TextView
+            android:id="@+id/user_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:text="@string/edit"
+            android:textSize="16sp"
+            android:textColor="@color/blue" />
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
@@ -42,13 +50,12 @@
         android:id="@+id/full_name_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/full_name_hint"
         style="@style/App.Input.Layout">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/full_name_input_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/gray"
+            android:text="Mary Cruz"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
     <TextView
@@ -62,12 +69,12 @@
         android:id="@+id/email_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/email_hint"
         style="@style/App.Input.Layout">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/email_input_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/email_hint"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
     <TextView
@@ -81,12 +88,23 @@
         android:id="@+id/phone_number_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/phone_number_hint"
+        android:layout_marginBottom="20dp"
         style="@style/App.Input.Layout">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/phone_number_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/phone_number_hint"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/save_changes"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:text="@string/save_changes"
+        android:textColor="@color/white"
+        android:textFontWeight="500"
+        android:visibility="invisible"
+        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium" />
 </LinearLayout>

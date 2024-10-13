@@ -7,10 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,6 +21,9 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
+    lateinit var navHostFragment: NavHostFragment
+    lateinit var navController: NavController
+    lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,10 +36,10 @@ class MainActivity : AppCompatActivity() {
         }
         // Navigation variables
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.main_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
-        val appBarConfiguration = AppBarConfiguration(setOf(R.id.home, R.id.analysis, R.id.budgets, R.id.profile))
         val appBar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        navHostFragment = supportFragmentManager.findFragmentById(R.id.main_fragment) as NavHostFragment
+        navController = navHostFragment.navController
+        appBarConfiguration = AppBarConfiguration(setOf(R.id.home, R.id.analysis, R.id.budgets, R.id.profile))
 
         // Set navigation
         setSupportActionBar(appBar)
@@ -43,6 +48,13 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.main_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        return navController.navigateUp(appBarConfiguration)
+                || super.onSupportNavigateUp()
+    }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.top_app_bar, menu)
         return super.onCreateOptionsMenu(menu)
