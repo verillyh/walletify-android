@@ -24,6 +24,9 @@
         <action
             android:id="@+id/action_profile_to_home"
             app:destination="@id/home" />
+        <action
+            android:id="@+id/action_profile_to_login"
+            app:destination="@id/login" />
     </fragment>
     <fragment
         android:id="@id/budgets"
@@ -33,5 +36,26 @@
         <action
             android:id="@+id/action_budgets_to_home"
             app:destination="@id/home" />
+    </fragment>
+    <fragment
+        android:id="@+id/login"
+        android:name="com.example.walletify.Login"
+        android:label="Login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_login_to_profile"
+            app:destination="@id/profile" />
+        <action
+            android:id="@+id/action_login_to_signup"
+            app:destination="@id/signup" />
+    </fragment>
+    <fragment
+        android:id="@+id/signup"
+        android:name="com.example.walletify.Signup"
+        android:label="Signup"
+        tools:layout="@layout/fragment_signup" >
+        <action
+            android:id="@+id/action_signup_to_login"
+            app:destination="@id/login" />
     </fragment>
 </navigation>

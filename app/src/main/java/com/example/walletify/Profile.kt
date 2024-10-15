@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
+import androidx.navigation.findNavController
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
@@ -53,6 +54,9 @@ class Profile : Fragment() {
         val saveChangesButton = layout.findViewById<Button>(R.id.save_changes)
         val grayColor = resources.getColor(R.color.gray, null)
         val whiteColor = resources.getColor(R.color.white, null)
+        val navController = activity?.findNavController(R.id.main_fragment)
+
+        navController?.navigate(R.id.signup)
 
         edit.setOnClickListener {
             Log.i("Walletify", "Edit clicked")

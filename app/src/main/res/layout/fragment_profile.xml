@@ -50,6 +50,7 @@
         android:id="@+id/full_name_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:enabled="false"
         style="@style/App.Input.Layout">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/full_name_input_edit_text"
@@ -69,6 +70,7 @@
         android:id="@+id/email_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:enabled="false"
         style="@style/App.Input.Layout">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/email_input_edit_text"
@@ -89,6 +91,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
+        android:enabled="false"
         style="@style/App.Input.Layout">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/phone_number_edit_text"
