@@ -5,6 +5,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.Toast
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
+import com.example.walletify.data.User
+import com.example.walletify.data.UserViewModel
+import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -34,7 +43,44 @@ class Signup : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_signup, container, false)
+        val layout = inflater.inflate(R.layout.fragment_signup, container, false)
+        val userViewModel: UserViewModel by activityViewModels()
+        val signup_button = layout.findViewById<Button>(R.id.signup_button)
+
+        signup_button.setOnClickListener {
+            // TODO: User validation
+            val userEmail =
+                layout.findViewById<TextInputEditText>(R.id.email_input_edit_text).text.toString()
+            val userPhoneNumber =
+                layout.findViewById<TextInputEditText>(R.id.phone_number_edit_text).text.toString()
+            val userFullName =
+                layout.findViewById<TextInputEditText>(R.id.full_name_input_edit_text).text.toString()
+            val userPassword =
+                layout.findViewById<TextInputEditText>(R.id.password_input_edit_text).text.toString()
+
+            lifecycleScope.launch {
+                val success = userViewModel.addUser(
+                    User(
+                        fullName = userFullName,
+                        email = userEmail,
+                        phoneNumber = userPhoneNumber,
+                        password = userPassword
+                    )
+                )
+                if (success) {
+                    Toast.makeText(activity, "Successfully signed up", Toast.LENGTH_SHORT)
+                        .show()
+                    activity?.findNavController(R.id.main_fragment)?.navigate(R.id.login)
+                }
+                else {
+                    Toast.makeText(activity, "Something went wrong, please try again", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+        }
+
+
+        return layout
     }
 
     companion object {

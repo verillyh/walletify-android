@@ -10,9 +10,13 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import com.example.walletify.data.UserViewModel
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -42,8 +46,10 @@ class Profile : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        // TODO: Optimize code
         val layout = inflater.inflate(R.layout.fragment_profile, container, false)
         val edit = layout.findViewById<TextView>(R.id.user_edit)
+        val userName = layout.findViewById<TextView>(R.id.user_name)
         val fullNameInputLayout = layout.findViewById<TextInputLayout>(R.id.full_name_input_layout)
         val fullNameEditText = layout.findViewById<TextInputEditText>(R.id.full_name_input_edit_text)
         val emailInputLayout = layout.findViewById<TextInputLayout>(R.id.email_input_layout)
@@ -55,9 +61,23 @@ class Profile : Fragment() {
         val grayColor = resources.getColor(R.color.gray, null)
         val whiteColor = resources.getColor(R.color.white, null)
         val navController = activity?.findNavController(R.id.main_fragment)
+        val userViewModel: UserViewModel by activityViewModels()
 
-        navController?.navigate(R.id.signup)
+        lifecycleScope.launch {
+            // Change profile state whenever it's updated
+            userViewModel.uiState.collect { state ->
+                if (!state.loggedIn) {
+                    navController?.navigate(R.id.login)
+                }
 
+                userName.text = state.fullName
+                fullNameEditText.setText(state.fullName)
+                emailEditText.setText(state.email)
+                phoneNumberEditText.setText(state.phoneNumber)
+            }
+        }
+
+        // Edit logic
         edit.setOnClickListener {
             Log.i("Walletify", "Edit clicked")
             fullNameInputLayout.isEnabled = true
@@ -70,6 +90,7 @@ class Profile : Fragment() {
             saveChangesButton.isVisible = true
         }
 
+        // On click save button
         saveChangesButton.setOnClickListener {
             fullNameInputLayout.isEnabled = false
             fullNameEditText.setTextColor(grayColor)
@@ -79,6 +100,15 @@ class Profile : Fragment() {
             phoneNumberEditText.setTextColor(grayColor)
             toHide.isVisible = true
             saveChangesButton.isVisible = false
+
+            // Save new details
+            lifecycleScope.launch {
+                userViewModel.updateDetails(
+                    fullNameEditText.text.toString(),
+                    phoneNumberEditText.text.toString(),
+                    emailEditText.text.toString()
+                )
+            }
         }
 
         return layout

@@ -1,11 +1,22 @@
 package com.example.walletify
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import com.example.walletify.data.UserViewModel
+import com.google.android.material.textfield.TextInputEditText
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -35,7 +46,37 @@ class Login : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_login, container, false)
+        val layout = inflater.inflate(R.layout.fragment_login, container, false)
+        val navController = activity?.findNavController(R.id.main_fragment)
+        val userViewModel: UserViewModel by activityViewModels()
+
+        layout.findViewById<TextView>(R.id.redirect_to_signup).setOnClickListener {
+            navController?.navigate(R.id.signup)
+        }
+        layout.findViewById<Button>(R.id.login_button).setOnClickListener {
+            val email = layout.findViewById<TextInputEditText>(R.id.email_input_edit_text).text.toString()
+            val password = layout.findViewById<TextInputEditText>(R.id.password_input_edit_text).text.toString()
+
+            lifecycleScope.launch {
+                val successful = userViewModel.login(email, password)
+
+                if (successful) {
+                    Toast.makeText(activity, "Logged in!", Toast.LENGTH_SHORT)
+                        .show()
+                    Log.i("Walletify", "User logged in")
+                    navController?.navigate(R.id.profile)
+                }
+                else {
+                    Toast.makeText(activity, "Wrong credentials!", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+
+        }
+
+
+
+        return layout
     }
 
     companion object {
