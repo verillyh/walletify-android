@@ -8,4 +8,5 @@
     <color name="off_yellow">#D4E157</color>
     <color name="blue">#1E90FF</color>
     <color name="gray">#88929E</color>
+    <color name="popup_background">#BF000000</color>
 </resources>

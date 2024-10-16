@@ -57,6 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Mary Cruz"
+            android:textColor="@color/gray"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
     <TextView
@@ -77,6 +78,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/email_hint"
+            android:textColor="@color/gray"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
     <TextView
@@ -98,6 +100,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/phone_number_hint"
+            android:textColor="@color/gray"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
 

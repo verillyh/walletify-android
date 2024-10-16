@@ -6,12 +6,16 @@
         <item name="fontFamily">@font/main_font</item>
         <item name="colorPrimary">@color/green</item>
         <item name="colorOutline">@color/gray</item>
+        <item name="android:textColor">@color/white</item>
         <!--        <item name="actionBarTheme">@style/TopAppBar.Style</item>-->
         <item name="bottomNavigationStyle">@style/App.NavigationView</item>
         <item name="materialButtonOutlinedStyle">@style/App.Button.Outlined</item>
     </style>
     <style name="App.NavigationView" parent="Widget.Material3.BottomNavigationView">
         <item name="materialThemeOverlay">@style/App.NavigationView.ThemeOverlay</item>
+    </style>
+    <style name="App.Input.Text.Small" parent="App.Input.Text">
+        <item name="android:textSize">16sp</item>
     </style>
     <style name="App.NavigationView.ThemeOverlay" parent="">
         <item name="colorOnSurface">@color/green</item>
@@ -23,6 +27,9 @@
     <style name="App.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
         <item name="colorOnSurface">@color/white</item>
     </style>
+    <style name="App.Button.Group" parent="">
+        <item name="android:spacing">3dp</item>
+    </style>
     <style name="App.Button.Filter" parent="Widget.Material3.Button">
         <item name="android:padding">0dp</item>
         <item name="android:paddingEnd">5dp</item>
@@ -33,6 +40,12 @@
         <item name="iconGravity">end</item>
         <item name="iconPadding">4dp</item>
     </style>
+    <style name="App.Button.Entry" parent="Widget.Material3.Button">
+        <item name="android:padding">0dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:layout_weight">1</item>
+    </style>
     <style name="roundedImageView" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
@@ -42,7 +55,7 @@
         <item name="android:textColor">@color/white</item>
     </style>
     <style name="App.Input.Layout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
-        <item name="android:textColor">@color/gray</item>
+        <item name="android:textColor">@color/white</item>
         <item name="boxStrokeColor">@color/profile_input_layout</item>
     </style>
 <!--    <style name="TopAppBar.Style" parent="ThemeOverlay.Material3.Dark.ActionBar">-->
