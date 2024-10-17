@@ -22,7 +22,10 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.walletify.data.TransactionsViewModel
 import com.example.walletify.data.UserViewModel
+import com.example.walletify.data.Wallet
+import com.example.walletify.data.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -35,6 +38,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var navController: NavController
     lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var userViewModel: UserViewModel
+    lateinit var transactionsViewModel: TransactionsViewModel
+    lateinit var walletViewModel: WalletViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +51,15 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        // Instantiate view models
+        walletViewModel = ViewModelProvider(this)[WalletViewModel::class.java]
         userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
+        transactionsViewModel = ViewModelProvider(this)[TransactionsViewModel::class.java]
+
+        // Add guest if no guest profile
+        lifecycleScope.launch {
+            userViewModel.addGuest(walletViewModel.repository)
+        }
 
         // Setup app navigation
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)

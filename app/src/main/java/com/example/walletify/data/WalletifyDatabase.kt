@@ -5,9 +5,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [User::class], version = 1, exportSchema = false)
+@Database(entities = [User::class, Transaction::class, Wallet::class], version = 1, exportSchema = false)
 public abstract class WalletifyDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun transactionDao(): TransactionDao
+    abstract fun walletDao(): WalletDao
 
 
     // Use as singleton to enforce 1 instance for the database

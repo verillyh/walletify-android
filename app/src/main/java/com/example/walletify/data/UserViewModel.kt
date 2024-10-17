@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.util.copy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,10 +15,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 data class UserUiState(
-    val id: Int = -1,
-    val fullName: String = "",
-    val email: String = "",
-    val phoneNumber: String = "",
+    val id: Long = 1,
+    val fullName: String = "guest",
+    val email: String = "guest@guest.com",
+    val phoneNumber: String = "guest",
     val loggedIn: Boolean = false
 )
 
@@ -28,26 +29,60 @@ class UserViewModel(application: Application): AndroidViewModel(application) {
     val allUserData: Flow<List<User>>
     val repository: UserRepository
 
-
     init {
         // Get user DAO from database
         val userDao = WalletifyDatabase.getDatabase(application).userDao()
+
         // Get repository
         repository = UserRepository(userDao)
         // Get the user's table data
         allUserData = repository.readAllData
     }
 
-    suspend fun addUser(user: User): Boolean {
+    suspend fun addUser(user: User, walletRepository: WalletRepository): Boolean {
         // Launch async with coroutine.
         // Dispatchers.IO to use background thread instead of UI/main thread
         return withContext(Dispatchers.IO) {
-            val result = repository.addUser(user)
-            result.toInt() == 1
+            // Add new user
+            val userId = repository.addUser(user)
+
+            // If fail to add, return false
+            if (userId < 0) {
+                return@withContext false
+            }
+
+            // Add default wallet
+            val walletId = walletRepository.addWallet(Wallet(
+                balance = 0.0,
+                expense = 0.0,
+                income = 0.0,
+                userId = userId
+            ))
+
+            // If wallet is successfully added, return true
+            walletId >= 0
+        }
+    }
+
+    suspend fun addGuest(walletRepository: WalletRepository) {
+        // Get guest user
+        val result = repository.getUserFromId(1)
+        // Build guest profile
+        val guest = User(
+            fullName = "guest",
+            email = "guest@guest.com",
+            phoneNumber = "guest",
+            password = "guest",
+            id = 1
+        )
+        // If no guest user, add it
+        if (result == null) {
+            addUser(guest, walletRepository)
         }
     }
 
     suspend fun updateDetails(fullName: String, phoneNumber: String, email: String): Boolean {
+        // Dispatchers IO to use background threads instead of UI/main thread
         return withContext(Dispatchers.IO) {
             try {
                 // Update database
@@ -57,15 +92,16 @@ class UserViewModel(application: Application): AndroidViewModel(application) {
                 // Update UI state
                 updateUiState(fullName, phoneNumber, email, userId, true)
             }
+            // If something goes wrong, log and return false
             catch (e: Exception) {
                 Log.e("Walletify", e.toString())
-                false
+                return@withContext false
             }
             true
         }
     }
 
-    fun updateUiState(fullName: String, phoneNumber: String, email: String, id: Int, logged: Boolean) {
+    fun updateUiState(fullName: String, phoneNumber: String, email: String, id: Long, logged: Boolean) {
         // Update the UI state
         try {
             _uiState.update { state ->

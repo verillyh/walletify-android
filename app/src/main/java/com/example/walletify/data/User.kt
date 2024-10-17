@@ -12,5 +12,5 @@ data class User(
     @ColumnInfo(name = "email") val email: String,
     @ColumnInfo(name = "phone_number") val phoneNumber: String,
     @ColumnInfo(name = "password") val password: String,
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
 )

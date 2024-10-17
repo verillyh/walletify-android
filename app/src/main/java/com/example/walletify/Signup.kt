@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.example.walletify.data.User
 import com.example.walletify.data.UserViewModel
+import com.example.walletify.data.WalletViewModel
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 
@@ -45,6 +46,7 @@ class Signup : Fragment() {
         // Inflate the layout for this fragment
         val layout = inflater.inflate(R.layout.fragment_signup, container, false)
         val userViewModel: UserViewModel by activityViewModels()
+        val walletViewModel: WalletViewModel by activityViewModels()
         val signup_button = layout.findViewById<Button>(R.id.signup_button)
 
         signup_button.setOnClickListener {
@@ -59,19 +61,24 @@ class Signup : Fragment() {
                 layout.findViewById<TextInputEditText>(R.id.password_input_edit_text).text.toString()
 
             lifecycleScope.launch {
+                // Add new user
                 val success = userViewModel.addUser(
                     User(
                         fullName = userFullName,
                         email = userEmail,
                         phoneNumber = userPhoneNumber,
                         password = userPassword
-                    )
+                    ),
+                    walletViewModel.repository
                 )
+
+                // If successfully added, show success toast
                 if (success) {
                     Toast.makeText(activity, "Successfully signed up", Toast.LENGTH_SHORT)
                         .show()
                     activity?.findNavController(R.id.main_fragment)?.navigate(R.id.login)
                 }
+                // Else show fail toast
                 else {
                     Toast.makeText(activity, "Something went wrong, please try again", Toast.LENGTH_SHORT)
                         .show()
