@@ -35,6 +35,7 @@ class UserRepository(private val userDao: UserDao) {
             }
 
             val defaultWallet = Wallet(
+                walletName = "Main",
                 balance = 0.0,
                 expense = 0.0,
                 income = 0.0,

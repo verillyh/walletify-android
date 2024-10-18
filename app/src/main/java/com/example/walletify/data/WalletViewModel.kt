@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 data class WalletUiState(
+    val walletName: String = "",
     val balance: Double = 0.0,
     val expense: Double = 0.0,
     val income: Double = 0.0,
@@ -38,6 +39,7 @@ class WalletViewModel(application: Application): AndroidViewModel(application) {
                 walletState?.let {
                     _uiState.update { state ->
                         state.copy(
+                            walletName = walletState.walletName,
                             balance = walletState.balance,
                             expense = walletState.expense,
                             income = walletState.income,

@@ -17,6 +17,7 @@ import com.google.android.material.textfield.TextInputEditText
 import androidx.lifecycle.viewModelScope
 import com.example.walletify.data.TransactionsViewModel
 import com.example.walletify.data.WalletViewModel
+import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 
 
@@ -53,6 +54,9 @@ class Login : Fragment() {
         val userViewModel: UserViewModel by activityViewModels()
         val walletViewModel: WalletViewModel by activityViewModels()
         val transactionsViewModel: TransactionsViewModel by activityViewModels()
+
+        activity?.findViewById<MaterialToolbar>(R.id.topAppBar)?.subtitle = ""
+
 
         layout.findViewById<TextView>(R.id.redirect_to_signup).setOnClickListener {
             navController?.navigate(R.id.signup)

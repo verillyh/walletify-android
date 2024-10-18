@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -18,7 +20,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -27,15 +28,14 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.walletify.data.Transaction
 import com.example.walletify.data.TransactionsViewModel
 import com.example.walletify.data.UserViewModel
-import com.example.walletify.data.Wallet
 import com.example.walletify.data.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 class MainActivity : AppCompatActivity() {
     lateinit var navHostFragment: NavHostFragment
@@ -77,7 +77,11 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(appBar)
         setupActionBarWithNavController(navController, appBarConfiguration)
         bottomNavigationView.setupWithNavController(navController)
-
+        lifecycleScope.launch {
+            walletViewModel.uiState.collect { state ->
+                appBar.subtitle = state.walletName
+            }
+        }
 
         // Setup FAB
         val fab = findViewById<FloatingActionButton>(R.id.fab)
@@ -113,14 +117,26 @@ class MainActivity : AppCompatActivity() {
         val incomeLayout = LayoutInflater.from(this).inflate(R.layout.entry_income, layoutContainer, false)
         val budgetLayout = LayoutInflater.from(this).inflate(R.layout.entry_budget, layoutContainer, false)
         val addCategories = entryLayout.findViewById<MaterialButtonToggleGroup>(R.id.add_categories)
+        val expenseCategoryDropdown = expenseLayout.findViewById<AutoCompleteTextView>(R.id.expense_category)
+        val expenseCategories = TransactionCategory.entries.map { it.displayName }
+
+        expenseCategoryDropdown.setAdapter(ArrayAdapter(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            expenseCategories
+        ))
+
 
         // On add expense
         expenseLayout.findViewById<Button>(R.id.entry_expense_add).setOnClickListener {
-            onAddExpense(expenseLayout)
+            onAddEntry(expenseLayout, 'E')
             popupWindow.dismiss()
         }
 
-        incomeLayout.findViewById<Button>(R.id.entry_income_add)
+        incomeLayout.findViewById<Button>(R.id.entry_income_add).setOnClickListener {
+            onAddEntry(incomeLayout, 'I')
+            popupWindow.dismiss()
+        }
 
         // Expense layout as default
         switchEntryView(layoutContainer, expenseLayout)
@@ -150,16 +166,28 @@ class MainActivity : AppCompatActivity() {
         layoutContainer.addView(layout)
     }
 
-    private fun onAddExpense(parentLayout: View) {
+    private fun onAddEntry(parentLayout: View, type: Char) {
         val amount = parentLayout.findViewById<TextInputEditText>(R.id.amount_input_edit_text).text.toString()
-        val category = parentLayout.findViewById<TextInputEditText>(R.id.category_input_edit_text).text.toString()
         val note = parentLayout.findViewById<TextInputEditText>(R.id.note_input_edit_text).text.toString()
+        var category = TransactionCategory.INCOME
+
+        if (type == 'E') {
+            val selected = parentLayout.findViewById<AutoCompleteTextView>(R.id.expense_category).text.toString()
+            if (selected == "") {
+                Toast.makeText(this, "Please select a category", Toast.LENGTH_SHORT)
+                    .show()
+                return
+            }
+
+            category = TransactionCategory.entries.first { it.displayName == selected }
+        }
 
         val transaction = Transaction(
             category = category,
             amount = amount.toDouble(),
-            type = 'E',
+            type = type,
             note = note,
+            datetime = LocalDateTime.now(),
             // TODO: Maybe use collect instead??
             userId = userViewModel.uiState.value.id
         )

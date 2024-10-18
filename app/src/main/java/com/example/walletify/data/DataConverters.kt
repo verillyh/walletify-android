@@ -1,0 +1,37 @@
+package com.example.walletify.data
+
+import androidx.room.TypeConverter
+import com.example.walletify.TransactionCategory
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+class DataConverters {
+    private val datetimeFormat = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy, HH:mm", Locale("en", "AU"))
+
+    // Store enum as string
+    @TypeConverter
+    fun fromExpenseCategory(category: TransactionCategory): String {
+        return category.name
+    }
+
+    // Convert stored string back to enum
+    @TypeConverter
+    fun toExpenseCategory(category: String): TransactionCategory {
+        return TransactionCategory.valueOf(category) // Retrieve enum from the string
+    }
+
+    // Convert LocalDate to a string
+    @TypeConverter
+    fun fromLocalDateTime(date: LocalDateTime?): String? {
+        return date?.format(datetimeFormat)
+    }
+
+    // Convert string back to LocalDate
+    @TypeConverter
+    fun toLocalDateTime(dateString: String?): LocalDateTime? {
+        return dateString?.let {
+            LocalDateTime.parse(it, datetimeFormat)
+        }
+    }
+}

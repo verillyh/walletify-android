@@ -13,6 +13,7 @@ import androidx.navigation.findNavController
 import com.example.walletify.data.User
 import com.example.walletify.data.UserViewModel
 import com.example.walletify.data.WalletViewModel
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 
@@ -48,6 +49,8 @@ class Signup : Fragment() {
         val userViewModel: UserViewModel by activityViewModels()
         val walletViewModel: WalletViewModel by activityViewModels()
         val signup_button = layout.findViewById<Button>(R.id.signup_button)
+
+        activity?.findViewById<MaterialToolbar>(R.id.topAppBar)?.subtitle = ""
 
         signup_button.setOnClickListener {
             // TODO: User validation

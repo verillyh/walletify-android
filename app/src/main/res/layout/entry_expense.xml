@@ -53,13 +53,14 @@
         android:id="@+id/category_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/App.Input.Layout">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/category_input_edit_text"
+        app:boxStrokeColor="@color/profile_input_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <AutoCompleteTextView
+            android:id="@+id/expense_category"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            style="@style/App.Input.Layout"/>
+            android:inputType="none"
+            android:textColor="@color/white"/>
     </com.google.android.material.textfield.TextInputLayout>
     <TextView
         android:layout_width="wrap_content"
