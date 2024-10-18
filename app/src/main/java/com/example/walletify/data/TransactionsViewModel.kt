@@ -18,8 +18,12 @@ class TransactionsViewModel(application: Application): AndroidViewModel(applicat
         return allUserTransactions
     }
 
-    suspend fun addUserTransaction(transaction: Transaction): Boolean {
-        val transactionId = repository.addTransaction(transaction)
-        return transactionId >= 0
+    suspend fun addUserTransaction(transaction: Transaction, walletRepository: WalletRepository, currentBalance: Double, currentExpense: Double, currentIncome: Double): Boolean {
+        // Add transaction
+        val success = repository.addTransaction(transaction, walletRepository, currentBalance, currentExpense, currentIncome)
+        if (!success) {
+            return false
+        }
+        return true
     }
 }

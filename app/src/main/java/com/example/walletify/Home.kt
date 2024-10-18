@@ -7,8 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.TextView
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.walletify.data.WalletViewModel
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -38,9 +43,21 @@ class Home : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val layout = inflater.inflate(R.layout.fragment_home, container, false)
-
+        val balance = layout.findViewById<TextView>(R.id.current_balance)
+        val expense = layout.findViewById<TextView>(R.id.current_month_expense)
+        val income = layout.findViewById<TextView>(R.id.current_month_income)
         val transactionList = layout.findViewById<RecyclerView>(R.id.transaction_recycler_view)
+        val walletViewModel: WalletViewModel by activityViewModels()
         val data = mutableListOf<TransactionItem>()
+
+        // Update cashflow, income, expense
+        lifecycleScope.launch {
+            walletViewModel.uiState.collect { state ->
+                balance.text = String.format("$" + state.balance.toString())
+                expense.text = String.format("$" + state.expense.toString())
+                income.text = String.format("$" + state.income.toString())
+            }
+        }
 
         // Simulate transactions
         for (i in 1..20) {

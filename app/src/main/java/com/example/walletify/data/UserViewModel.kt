@@ -15,10 +15,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 data class UserUiState(
-    val id: Long = 1,
-    val fullName: String = "guest",
-    val email: String = "guest@guest.com",
-    val phoneNumber: String = "guest",
+    val id: Long = -1,
+    val fullName: String = "",
+    val email: String = "",
+    val phoneNumber: String = "",
     val loggedIn: Boolean = false
 )
 
@@ -37,114 +37,53 @@ class UserViewModel(application: Application): AndroidViewModel(application) {
         repository = UserRepository(userDao)
         // Get the user's table data
         allUserData = repository.readAllData
+
+        // Set UI state to be the current user
+        viewModelScope.launch {
+            repository.userStateFlow.collect { user ->
+                user?.let {
+                    _uiState.update { state ->
+                        state.copy(
+                            id = user.id,
+                            fullName = user.fullName,
+                            email = user.email,
+                            phoneNumber = user.phoneNumber
+                        )
+                    }
+                }
+            }
+        }
     }
 
     suspend fun addUser(user: User, walletRepository: WalletRepository): Boolean {
-        // Launch async with coroutine.
-        // Dispatchers.IO to use background thread instead of UI/main thread
-        return withContext(Dispatchers.IO) {
-            // Add new user
-            val userId = repository.addUser(user)
-
-            // If fail to add, return false
-            if (userId < 0) {
-                return@withContext false
-            }
-
-            // Add default wallet
-            val walletId = walletRepository.addWallet(Wallet(
-                balance = 0.0,
-                expense = 0.0,
-                income = 0.0,
-                userId = userId
-            ))
-
-            // If wallet is successfully added, return true
-            walletId >= 0
-        }
+        return repository.addUser(user, walletRepository)
     }
 
     suspend fun addGuest(walletRepository: WalletRepository) {
-        // Get guest user
-        val result = repository.getUserFromId(1)
-        // Build guest profile
-        val guest = User(
-            fullName = "guest",
-            email = "guest@guest.com",
-            phoneNumber = "guest",
-            password = "guest",
-            id = 1
-        )
-        // If no guest user, add it
-        if (result == null) {
-            addUser(guest, walletRepository)
-        }
+        repository.addGuest(walletRepository)
     }
 
     suspend fun updateDetails(fullName: String, phoneNumber: String, email: String): Boolean {
-        // Dispatchers IO to use background threads instead of UI/main thread
-        return withContext(Dispatchers.IO) {
-            try {
-                // Update database
-                val userId = _uiState.value.id
-                repository.updateUserDetails(fullName, email, phoneNumber, userId)
-
-                // Update UI state
-                updateUiState(fullName, phoneNumber, email, userId, true)
-            }
-            // If something goes wrong, log and return false
-            catch (e: Exception) {
-                Log.e("Walletify", e.toString())
-                return@withContext false
-            }
-            true
-        }
+        val success = repository.updateUserDetails(fullName, phoneNumber, email, _uiState.value.id)
+        return success
     }
 
-    fun updateUiState(fullName: String, phoneNumber: String, email: String, id: Long, logged: Boolean) {
-        // Update the UI state
-        try {
+    suspend fun login(email: String, password: String, walletRepository: WalletRepository): Boolean {
+        val success = repository.login(email, password, walletRepository)
+
+        // If can't login
+        if (!success) {
+            return false
+        }
+        // Else if successfully logged in
+        else {
+            // Change state to logged in
             _uiState.update { state ->
                 state.copy(
-                    id = id,
-                    fullName = fullName,
-                    email = email,
-                    phoneNumber = phoneNumber,
-                    loggedIn = logged
+                    loggedIn = true
                 )
             }
+            return true
         }
-        // If an exception occurs, log and return false
-        catch(e: Exception) {
-            Log.e("Walletify", e.toString())
-        }
-    }
-
-    suspend fun login(email: String, password: String): Boolean {
-        return withContext(Dispatchers.IO) {
-            // Get user based on email
-            val user = repository.getUserFromEmail(email)
-
-            // If no user is found
-            if (user == null) {
-                false
-            }
-            // Else if found
-            else if (user.password == password) {
-                updateUiState(
-                    fullName = user.fullName,
-                    phoneNumber = user.phoneNumber,
-                    email = user.email,
-                    id = user.id,
-                    logged = true
-                )
-                true
-            }
-            // Default case
-            else {
-                false
-            }
-        }
-
     }
 }

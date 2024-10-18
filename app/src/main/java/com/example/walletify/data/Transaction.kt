@@ -25,5 +25,6 @@ data class Transaction(
     @ColumnInfo(name = "note") val note: String,
 //    @ColumnInfo(name = "datetime") val datetime: LocalDate = LocalDate.now(),
     @ColumnInfo(name = "user_id") val userId: Long,
-    @PrimaryKey(autoGenerate = true) val id: Long = -1
+    // TODO: Maybe change to wallet id?
+    @PrimaryKey(autoGenerate = true) val id: Long = 0
 )

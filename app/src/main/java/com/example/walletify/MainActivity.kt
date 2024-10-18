@@ -6,9 +6,11 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -22,6 +24,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.walletify.data.Transaction
 import com.example.walletify.data.TransactionsViewModel
 import com.example.walletify.data.UserViewModel
 import com.example.walletify.data.Wallet
@@ -30,6 +33,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
@@ -55,7 +59,7 @@ class MainActivity : AppCompatActivity() {
         walletViewModel = ViewModelProvider(this)[WalletViewModel::class.java]
         userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
         transactionsViewModel = ViewModelProvider(this)[TransactionsViewModel::class.java]
-
+//        this.deleteDatabase("walletify_database")
         // Add guest if no guest profile
         lifecycleScope.launch {
             userViewModel.addGuest(walletViewModel.repository)
@@ -111,6 +115,14 @@ class MainActivity : AppCompatActivity() {
         val budgetLayout = LayoutInflater.from(this).inflate(R.layout.entry_budget, layoutContainer, false)
         val addCategories = entryLayout.findViewById<MaterialButtonToggleGroup>(R.id.add_categories)
 
+        // On add expense
+        expenseLayout.findViewById<Button>(R.id.entry_expense_add).setOnClickListener {
+            onAddExpense(expenseLayout)
+            popupWindow.dismiss()
+        }
+
+        incomeLayout.findViewById<Button>(R.id.entry_income_add)
+
         // Expense layout as default
         switchEntryView(layoutContainer, expenseLayout)
 
@@ -137,6 +149,38 @@ class MainActivity : AppCompatActivity() {
     private fun switchEntryView(layoutContainer: ViewGroup, layout: View) {
         layoutContainer.removeAllViews()
         layoutContainer.addView(layout)
+    }
+
+    private fun onAddExpense(parentLayout: View) {
+        val amount = parentLayout.findViewById<TextInputEditText>(R.id.amount_input_edit_text).text.toString()
+        val category = parentLayout.findViewById<TextInputEditText>(R.id.category_input_edit_text).text.toString()
+        val note = parentLayout.findViewById<TextInputEditText>(R.id.note_input_edit_text).text.toString()
+
+        val transaction = Transaction(
+            category = category,
+            amount = amount.toDouble(),
+            type = 'E',
+            note = note,
+            // TODO: Maybe use collect instead??
+            userId = userViewModel.uiState.value.id
+        )
+
+
+        lifecycleScope.launch {
+            var success = false
+            walletViewModel.uiState.value.apply {
+                success = transactionsViewModel.addUserTransaction(transaction, walletViewModel.repository, balance, expense, income)
+            }
+
+            if (success) {
+                Toast.makeText(application, "Transaction added!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+            else {
+                Toast.makeText(application, "Something went wrong, please try again", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
     }
 
     // Inflate menu to app bar
