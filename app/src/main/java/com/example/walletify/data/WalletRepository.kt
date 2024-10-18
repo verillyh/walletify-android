@@ -36,8 +36,8 @@ class WalletRepository(private val walletDao: WalletDao) {
             getWalletFromUserId(userId).collect { wallet ->
                 _walletStateFlow.value = wallet
             }
-
         }
+
     }
 
     suspend fun addWallet(wallet: Wallet): Boolean {

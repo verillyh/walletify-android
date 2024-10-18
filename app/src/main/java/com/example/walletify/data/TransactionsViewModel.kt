@@ -2,20 +2,27 @@ package com.example.walletify.data
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class TransactionsViewModel(application: Application): AndroidViewModel(application) {
-    lateinit var allUserTransactions: Flow<List<Transaction>>
+    private val _allUserTransactions = MutableStateFlow<List<Transaction>?>(null)
+    val allUserTransactions: StateFlow<List<Transaction>?> = _allUserTransactions.asStateFlow()
     val repository: TransactionRepository
 
     init {
         val transactionDao = WalletifyDatabase.getDatabase(application).transactionDao()
         repository = TransactionRepository(transactionDao)
-    }
 
-    fun getUserTransactions(userId: Long): Flow<List<Transaction>> {
-        allUserTransactions = repository.getUserTransactions(userId)
-        return allUserTransactions
+        viewModelScope.launch {
+            repository.transactionStateFlow.collect { transactionState ->
+                _allUserTransactions.value = transactionState
+            }
+        }
     }
 
     suspend fun addUserTransaction(transaction: Transaction, walletRepository: WalletRepository, currentBalance: Double, currentExpense: Double, currentIncome: Double): Boolean {

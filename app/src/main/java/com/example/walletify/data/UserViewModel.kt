@@ -68,8 +68,8 @@ class UserViewModel(application: Application): AndroidViewModel(application) {
         return success
     }
 
-    suspend fun login(email: String, password: String, walletRepository: WalletRepository): Boolean {
-        val success = repository.login(email, password, walletRepository)
+    suspend fun login(email: String, password: String, walletRepository: WalletRepository, transactionRepository: TransactionRepository): Boolean {
+        val success = repository.login(email, password, walletRepository, transactionRepository)
 
         // If can't login
         if (!success) {

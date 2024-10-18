@@ -2,6 +2,8 @@ package com.example.walletify.data
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,15 +16,22 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
     val repositoryScope = CoroutineScope(Dispatchers.IO)
 
     init {
-        repositoryScope.launch {
-            getUserTransactions(1).collect { transactions ->
-                _transactionStateFlow.value = transactions
-            }
-        }
+        // Update transaction state to guest's transactions as default
+        updateTransactionFlow(1)
     }
 
     fun getUserTransactions(userId: Long): Flow<List<Transaction>> {
         return transactionDao.getUserTransactions(userId)
+    }
+
+    fun updateTransactionFlow(userId: Long) {
+        repositoryScope.coroutineContext.cancelChildren()
+
+        repositoryScope.launch {
+            getUserTransactions(userId).collect { transactions ->
+                _transactionStateFlow.value = transactions
+            }
+        }
     }
 
     suspend fun addTransaction(transaction: Transaction, walletRepository: WalletRepository, currentBalance: Double, currentExpense: Double, currentIncome: Double): Boolean {

@@ -105,7 +105,7 @@ class UserRepository(private val userDao: UserDao) {
         }
     }
 
-    suspend fun login(email: String, password: String, walletRepository: WalletRepository): Boolean {
+    suspend fun login(email: String, password: String, walletRepository: WalletRepository, transactionRepository: TransactionRepository): Boolean {
         return withContext(Dispatchers.IO) {
             val user = getUserFromEmail(email)
 
@@ -114,9 +114,10 @@ class UserRepository(private val userDao: UserDao) {
             }
             // Else if found
             else if (user.password == password) {
+                // Update all state flows
                 updateUserStateFlow(user.id)
-                // Update wallet in use state
                 walletRepository.updateWalletState(user.id)
+                transactionRepository.updateTransactionFlow(user.id)
 
                 true
             }

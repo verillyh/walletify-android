@@ -6,8 +6,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.walletify.data.Transaction
 
-class TransactionItemAdapter(val data: List<TransactionItem>): RecyclerView.Adapter<TransactionItemAdapter.ViewHolder>() {
+class TransactionItemAdapter(): RecyclerView.Adapter<TransactionItemAdapter.ViewHolder>() {
+    private var transactionList = emptyList<Transaction>()
+
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val image = view.findViewById<ImageView>(R.id.transaction_image)
         val category = view.findViewById<TextView>(R.id.transaction_category)
@@ -21,16 +24,20 @@ class TransactionItemAdapter(val data: List<TransactionItem>): RecyclerView.Adap
         return ViewHolder(view)
     }
 
-    override fun getItemCount(): Int = data.size
+    override fun getItemCount(): Int = transactionList.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = data[position]
+        val item = transactionList[position]
 
-        holder.image.setImageResource(item.imageId)
+//        holder.image.setImageResource(item.imageId)
         holder.category.text = item.category
-        holder.cost.text = String.format("$" + item.cost.toString())
+        holder.cost.text = String.format("$" + item.amount.toString())
         holder.itemNote.text = item.note
-        holder.datetime.text = item.datetime
+//        holder.datetime.text = item.datetime
     }
 
+    fun setData(transactions: List<Transaction>) {
+        this.transactionList = transactions
+        notifyDataSetChanged()
+    }
 }

@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.walletify.data.TransactionsViewModel
 import com.example.walletify.data.WalletViewModel
 import kotlinx.coroutines.launch
 
@@ -47,8 +48,13 @@ class Home : Fragment() {
         val expense = layout.findViewById<TextView>(R.id.current_month_expense)
         val income = layout.findViewById<TextView>(R.id.current_month_income)
         val transactionList = layout.findViewById<RecyclerView>(R.id.transaction_recycler_view)
+        val transactionViewModel: TransactionsViewModel by activityViewModels()
         val walletViewModel: WalletViewModel by activityViewModels()
-        val data = mutableListOf<TransactionItem>()
+
+        // Set recycler view
+        val adapter = TransactionItemAdapter()
+        transactionList.layoutManager = LinearLayoutManager(activity)
+        transactionList.adapter = adapter
 
         // Update cashflow, income, expense
         lifecycleScope.launch {
@@ -59,20 +65,12 @@ class Home : Fragment() {
             }
         }
 
-        // Simulate transactions
-        for (i in 1..20) {
-            data.add(TransactionItem(
-                R.drawable.shopping_icon,
-                getString(R.string.shopping),
-                30.1,
-                "Chicken, eggs",
-                "Today, 14:21"
-            ))
+        // Modify list if there is an update
+        lifecycleScope.launch {
+            transactionViewModel.allUserTransactions.collect { transactionState ->
+                transactionState?.let { adapter.setData(it) }
+            }
         }
-
-        val adapter = TransactionItemAdapter(data)
-        transactionList.layoutManager = LinearLayoutManager(activity)
-        transactionList.adapter = adapter
 
 
         return layout

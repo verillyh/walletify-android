@@ -15,6 +15,7 @@ import androidx.navigation.findNavController
 import com.example.walletify.data.UserViewModel
 import com.google.android.material.textfield.TextInputEditText
 import androidx.lifecycle.viewModelScope
+import com.example.walletify.data.TransactionsViewModel
 import com.example.walletify.data.WalletViewModel
 import kotlinx.coroutines.launch
 
@@ -51,6 +52,7 @@ class Login : Fragment() {
         val navController = activity?.findNavController(R.id.main_fragment)
         val userViewModel: UserViewModel by activityViewModels()
         val walletViewModel: WalletViewModel by activityViewModels()
+        val transactionsViewModel: TransactionsViewModel by activityViewModels()
 
         layout.findViewById<TextView>(R.id.redirect_to_signup).setOnClickListener {
             navController?.navigate(R.id.signup)
@@ -60,7 +62,7 @@ class Login : Fragment() {
             val password = layout.findViewById<TextInputEditText>(R.id.password_input_edit_text).text.toString()
 
             lifecycleScope.launch {
-                val successful = userViewModel.login(email, password, walletViewModel.repository)
+                val successful = userViewModel.login(email, password, walletViewModel.repository, transactionsViewModel.repository)
 
                 if (successful) {
                     Toast.makeText(activity, "Logged in!", Toast.LENGTH_SHORT)
