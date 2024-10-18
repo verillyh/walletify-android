@@ -59,7 +59,6 @@ class MainActivity : AppCompatActivity() {
         walletViewModel = ViewModelProvider(this)[WalletViewModel::class.java]
         userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
         transactionsViewModel = ViewModelProvider(this)[TransactionsViewModel::class.java]
-//        this.deleteDatabase("walletify_database")
         // Add guest if no guest profile
         lifecycleScope.launch {
             userViewModel.addGuest(walletViewModel.repository)

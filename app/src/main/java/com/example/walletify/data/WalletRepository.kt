@@ -19,11 +19,7 @@ class WalletRepository(private val walletDao: WalletDao) {
     init {
         // Initialize wallet state
         // 1 for guest default wallet
-        repositoryScope.launch {
-            getWalletFromUserId(1).collect { wallet ->
-                _walletStateFlow.value = wallet
-            }
-        }
+        updateWalletState(1)
     }
 
    private fun getWalletFromUserId(userId: Long): Flow<Wallet> {
@@ -32,13 +28,16 @@ class WalletRepository(private val walletDao: WalletDao) {
        return wallet
    }
 
-    suspend fun updateWalletState(userId: Long) {
+    fun updateWalletState(userId: Long) {
         // Remove previous flow processes
         repositoryScope.coroutineContext.cancelChildren()
 
-        val wallet = getWalletFromUserId(userId).first()
+        repositoryScope.launch {
+            getWalletFromUserId(userId).collect { wallet ->
+                _walletStateFlow.value = wallet
+            }
 
-        _walletStateFlow.value = wallet
+        }
     }
 
     suspend fun addWallet(wallet: Wallet): Boolean {
@@ -64,7 +63,6 @@ class WalletRepository(private val walletDao: WalletDao) {
         }
 
         // Update wallet state to reflect in UI
-        updateWalletState(userId)
         return affectedRows
     }
 }

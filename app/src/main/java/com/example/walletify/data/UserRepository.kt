@@ -20,11 +20,8 @@ class UserRepository(private val userDao: UserDao) {
     val repositoryScope = CoroutineScope(Dispatchers.IO)
 
     init {
-        repositoryScope.launch {
-            getUserFromId(1).collect { user ->
-                _userStateFlow.value = user
-            }
-        }
+        // Collect state flow from guest as default
+        updateUserStateFlow(1)
     }
 
     suspend fun addUser(user: User, walletRepository: WalletRepository): Boolean {
@@ -95,14 +92,16 @@ class UserRepository(private val userDao: UserDao) {
         return userDao.getUserFromId(userId).first()
     }
 
-    suspend fun updateUserStateFlow(id: Long) {
+    fun updateUserStateFlow(id: Long) {
         // Cancel previous flow
         repositoryScope.coroutineContext.cancelChildren()
 
         // Collect new state
-        val user = getUserFromId(id).firstOrNull()
-        if (user != null) {
-            _userStateFlow.value = user
+        repositoryScope.launch {
+            val user = getUserFromId(id).firstOrNull()
+            if (user != null) {
+                _userStateFlow.value = user
+            }
         }
     }
 
@@ -115,7 +114,6 @@ class UserRepository(private val userDao: UserDao) {
             }
             // Else if found
             else if (user.password == password) {
-                // Update UI state
                 updateUserStateFlow(user.id)
                 // Update wallet in use state
                 walletRepository.updateWalletState(user.id)
