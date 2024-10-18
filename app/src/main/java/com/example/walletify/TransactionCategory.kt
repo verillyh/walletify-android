@@ -1,6 +1,7 @@
 package com.example.walletify
 
 enum class TransactionCategory(val displayName: String, val imageResId: Int) {
+    FOOD("Food", R.drawable.food_icon),
     HOUSING("Housing", R.drawable.housing_icon),
     TRANSPORTATION("Transportation", R.drawable.transportation_icon),
     SHOPPING("Shopping", R.drawable.shopping_icon),
@@ -13,5 +14,6 @@ enum class TransactionCategory(val displayName: String, val imageResId: Int) {
     EDUCATION("Education", R.drawable.education_icon),
     CLOTHING("Clothing", R.drawable.clothing_icon),
     MISCELLANEOUS("Miscellaneous", R.drawable.miscellaneous_icon),
-    INCOME("Income", R.drawable.income_icon)
+    INCOME("Income", R.drawable.income_icon),
+    TRANSFER("Transfer", R.drawable.transfer_icon)
 }

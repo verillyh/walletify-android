@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -29,30 +29,28 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/note"
+        android:text="@string/wallet_name"
         android:layout_marginTop="10dp"
         android:layout_gravity="start"
         style="@style/App.Input.Text.Small"/>
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/note_input_layout"
+        android:id="@+id/wallet_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="..."
         style="@style/App.Input.Layout">
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/note_input_edit_text"
+            android:id="@+id/wallet_input_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
-
     <Button
-        android:id="@+id/entry_income_add"
+        android:id="@+id/add_wallet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="@string/add_income"
+        android:text="@string/add"
         android:textSize="16sp"
         android:textColor="@color/white"
         android:textFontWeight="600"

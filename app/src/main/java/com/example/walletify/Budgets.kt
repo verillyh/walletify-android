@@ -6,8 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.walletify.data.WalletViewModel
+import com.google.android.material.appbar.MaterialToolbar
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -39,6 +44,15 @@ class Budgets : Fragment() {
         val layout = inflater.inflate(R.layout.fragment_budgets, container, false)
         val budgetItemContainer = layout.findViewById<RecyclerView>(R.id.budget_container)
         val data = mutableListOf<BudgetItem>()
+        val appBar = activity?.findViewById<MaterialToolbar>(R.id.topAppBar)
+        val walletViewModel: WalletViewModel by activityViewModels()
+
+        // Update subtitle for wallet name
+        lifecycleScope.launch {
+            walletViewModel.uiState.collect { state ->
+                appBar?.subtitle = state.walletName
+            }
+        }
 
         // Simulate list of budgets
         for (i in 1..15) {

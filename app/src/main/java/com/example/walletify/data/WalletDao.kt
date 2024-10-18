@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface WalletDao {
     @Query("SELECT * FROM wallet WHERE user_id LIKE :userId")
-    fun getUserWallet(userId: Long): Flow<Wallet>
+    fun getUserWallets(userId: Long): Flow<List<Wallet>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addWallet(wallet: Wallet): Long
@@ -18,6 +18,9 @@ interface WalletDao {
             "balance = :balance, " +
             "expense = :expense, " +
             "income = :income " +
-            "WHERE user_id LIKE :userId")
-    suspend fun updateWallet(balance: Double, expense: Double, income: Double, userId: Long): Int
+            "WHERE id LIKE :id")
+    suspend fun updateWallet(balance: Double, expense: Double, income: Double, id: Long): Int
+
+    @Query("SELECT id FROM wallet WHERE user_id LIKE :userId AND wallet_name LIKE :walletName")
+    suspend fun getWalletId(userId: Long, walletName: String): Long
 }

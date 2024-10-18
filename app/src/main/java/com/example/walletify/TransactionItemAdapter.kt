@@ -34,7 +34,7 @@ class TransactionItemAdapter(): RecyclerView.Adapter<TransactionItemAdapter.View
 
         holder.image.setImageResource(item.category.imageResId)
         holder.category.text = item.category.displayName
-        holder.cost.text = String.format("$" + item.amount.toString())
+        holder.cost.text = String.format(Locale("en", "AU"), "\$%.2f", item.amount)
         holder.itemNote.text = item.note
         holder.datetime.text = item.datetime.format(datetimeFormatter)
     }

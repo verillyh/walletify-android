@@ -14,6 +14,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.example.walletify.data.UserViewModel
+import com.example.walletify.data.WalletViewModel
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
@@ -58,10 +60,12 @@ class Profile : Fragment() {
         val phoneNumberEditText = layout.findViewById<TextInputEditText>(R.id.phone_number_edit_text)
         val toHide = layout.findViewById<LinearLayout>(R.id.on_edit_hide)
         val saveChangesButton = layout.findViewById<Button>(R.id.save_changes)
+        val appBar = activity?.findViewById<MaterialToolbar>(R.id.topAppBar)
         val grayColor = resources.getColor(R.color.gray, null)
         val whiteColor = resources.getColor(R.color.white, null)
         val navController = activity?.findNavController(R.id.main_fragment)
         val userViewModel: UserViewModel by activityViewModels()
+        val walletViewModel: WalletViewModel by activityViewModels()
 
         lifecycleScope.launch {
             // Change profile state whenever it's updated
@@ -74,6 +78,13 @@ class Profile : Fragment() {
                 fullNameEditText.setText(state.fullName)
                 emailEditText.setText(state.email)
                 phoneNumberEditText.setText(state.phoneNumber)
+            }
+        }
+
+        // Update subtitle for wallet name
+        lifecycleScope.launch {
+            walletViewModel.uiState.collect { state ->
+                appBar?.subtitle = state.walletName
             }
         }
 

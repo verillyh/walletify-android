@@ -9,10 +9,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WalletRepository(private val walletDao: WalletDao) {
-    private val _walletStateFlow = MutableStateFlow<Wallet?>(null)
-    val walletStateFlow: StateFlow<Wallet?> = _walletStateFlow.asStateFlow()
+    private val _walletStateFlow = MutableStateFlow<List<Wallet>?>(null)
+    val walletStateFlow: StateFlow<List<Wallet>?> = _walletStateFlow.asStateFlow()
     val repositoryScope = CoroutineScope(Dispatchers.IO)
 
 
@@ -22,8 +23,8 @@ class WalletRepository(private val walletDao: WalletDao) {
         updateWalletState(1)
     }
 
-   private fun getWalletFromUserId(userId: Long): Flow<Wallet> {
-       val wallet = walletDao.getUserWallet(userId)
+   private fun getWalletsFromUserId(userId: Long): Flow<List<Wallet>> {
+       val wallet = walletDao.getUserWallets(userId)
 
        return wallet
    }
@@ -33,11 +34,16 @@ class WalletRepository(private val walletDao: WalletDao) {
         repositoryScope.coroutineContext.cancelChildren()
 
         repositoryScope.launch {
-            getWalletFromUserId(userId).collect { wallet ->
+            getWalletsFromUserId(userId).collect { wallet ->
                 _walletStateFlow.value = wallet
             }
         }
+    }
 
+    suspend fun getWalletId(userId: Long, walletName: String): Long {
+        return withContext(Dispatchers.IO) {
+            walletDao.getWalletId(userId, walletName)
+        }
     }
 
     suspend fun addWallet(wallet: Wallet): Boolean {
@@ -48,13 +54,13 @@ class WalletRepository(private val walletDao: WalletDao) {
         return true
     }
 
-    suspend fun updateWallet(balance: Double, expense: Double, income: Double, userId: Long): Int {
+    suspend fun updateWallet(balance: Double, expense: Double, income: Double, walletId: Long): Int {
         // Update wallet in database
         val affectedRows = walletDao.updateWallet(
             balance = balance,
             expense = expense,
             income = income,
-            userId = userId
+            id = walletId
         )
 
         // If no rows were affected, then return -1

@@ -66,7 +66,7 @@ class Login : Fragment() {
             val password = layout.findViewById<TextInputEditText>(R.id.password_input_edit_text).text.toString()
 
             lifecycleScope.launch {
-                val successful = userViewModel.login(email, password, walletViewModel.repository, transactionsViewModel.repository)
+                val successful = userViewModel.login(email, password, walletViewModel, transactionsViewModel.repository)
 
                 if (successful) {
                     Toast.makeText(activity, "Logged in!", Toast.LENGTH_SHORT)

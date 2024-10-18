@@ -11,9 +11,9 @@ import java.time.LocalDateTime
     tableName = "transactions",
     foreignKeys = [
         ForeignKey(
-            entity = User::class,
+            entity = Wallet::class,
             parentColumns = arrayOf("id"),
-            childColumns = arrayOf("user_id"),
+            childColumns = arrayOf("wallet_id"),
             onUpdate = ForeignKey.CASCADE,
             onDelete = ForeignKey.CASCADE
         )
@@ -25,7 +25,6 @@ data class Transaction(
     @ColumnInfo(name = "type") val type: Char,
     @ColumnInfo(name = "note") val note: String,
     @ColumnInfo(name = "datetime") val datetime: LocalDateTime = LocalDateTime.now(),
-    @ColumnInfo(name = "user_id") val userId: Long,
-    // TODO: Maybe change to wallet id?
+    @ColumnInfo(name = "wallet_id") val walletId: Long,
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 )

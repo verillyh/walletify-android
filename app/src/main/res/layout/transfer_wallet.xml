@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -15,8 +15,8 @@
         android:id="@+id/amount_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:expandedHintEnabled="false"
         app:prefixText="$"
+        app:expandedHintEnabled="false"
         app:suffixText="AU"
         style="@style/App.Input.Layout">
         <com.google.android.material.textfield.TextInputEditText
@@ -29,30 +29,50 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/note"
+        android:text="@string/from"
         android:layout_marginTop="10dp"
         android:layout_gravity="start"
         style="@style/App.Input.Text.Small"/>
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/note_input_layout"
+        android:id="@+id/from_wallet_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="..."
-        style="@style/App.Input.Layout">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/note_input_edit_text"
+        app:boxStrokeColor="@color/profile_input_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu">
+        <AutoCompleteTextView
+            android:id="@+id/from_wallet_dropdown"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            style="@style/App.Input.Layout"/>
+            android:inputType="none"
+            android:textColor="@color/white"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/to"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="start"
+        style="@style/App.Input.Text.Small"/>
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/to_wallet_input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:boxStrokeColor="@color/profile_input_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu">
+        <AutoCompleteTextView
+            android:id="@+id/to_wallet_dropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:textColor="@color/white"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
-        android:id="@+id/entry_income_add"
+        android:id="@+id/transfer_wallet_add"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="@string/add_income"
+        android:text="@string/transfer"
         android:textSize="16sp"
         android:textColor="@color/white"
         android:textFontWeight="600"

@@ -11,6 +11,6 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addTransaction(transaction: Transaction): Long
 
-    @Query("SELECT * FROM transactions WHERE user_id LIKE :userId")
-    fun getUserTransactions(userId: Long): Flow<List<Transaction>>
+    @Query("SELECT * FROM transactions WHERE wallet_id LIKE :walletId")
+    fun getWalletTransactions(walletId: Long): Flow<List<Transaction>>
 }

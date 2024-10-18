@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.walletify.data.TransactionsViewModel
 import com.example.walletify.data.WalletViewModel
+import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
@@ -50,6 +51,7 @@ class Home : Fragment() {
         val transactionList = layout.findViewById<RecyclerView>(R.id.transaction_recycler_view)
         val transactionViewModel: TransactionsViewModel by activityViewModels()
         val walletViewModel: WalletViewModel by activityViewModels()
+        val appBar = activity?.findViewById<MaterialToolbar>(R.id.topAppBar)
 
         // Set recycler view
         val adapter = TransactionItemAdapter()
@@ -59,9 +61,13 @@ class Home : Fragment() {
         // Update cashflow, income, expense
         lifecycleScope.launch {
             walletViewModel.uiState.collect { state ->
+                // Main balance screen
                 balance.text = String.format("$" + state.balance.toString())
                 expense.text = String.format("$" + state.expense.toString())
                 income.text = String.format("$" + state.income.toString())
+
+                // Update subtitle for wallet name
+                appBar?.subtitle = state.walletName
             }
         }
 
