@@ -14,9 +14,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
-import com.example.walletify.data.TransactionsViewModel
-import com.example.walletify.data.UserViewModel
-import com.example.walletify.data.WalletViewModel
+import com.example.walletify.ui.UserViewModel
+import com.example.walletify.ui.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText

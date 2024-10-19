@@ -1,18 +1,15 @@
-package com.example.walletify.data
+package com.example.walletify.ui
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.util.copy
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import com.example.walletify.data.User
+import com.example.walletify.data.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 data class UserUiState(
     val id: Long = -1,
@@ -52,10 +49,6 @@ class UserViewModel(application: Application): AndroidViewModel(application) {
         return repository.addUser(user)
     }
 
-    suspend fun addGuest() {
-        repository.addGuest()
-    }
-
     suspend fun updateDetails(fullName: String, phoneNumber: String, email: String): Boolean {
         return repository.updateUserDetails(fullName, phoneNumber, email, _uiState.value.id)
     }
@@ -80,8 +73,10 @@ class UserViewModel(application: Application): AndroidViewModel(application) {
     }
 
     suspend fun signout(): Boolean {
+        // Signal sign out to data layer
         val success = repository.signout()
 
+        // Update UI state if success
         if (success) {
             _uiState.update { state ->
                 state.copy (

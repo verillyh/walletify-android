@@ -1,5 +1,6 @@
 package com.example.walletify.data
 
+import com.example.walletify.TransactionCategory
 import com.example.walletify.TransactionType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +15,7 @@ import kotlinx.coroutines.withContext
 
 class WalletRepository(
     private val walletDao: WalletDao,
-    private val transactionDao: TransactionDao,
+    transactionDao: TransactionDao,
     private val userStateFlow: StateFlow<User?>
 ) {
     private val transactionRepository: TransactionRepository
@@ -34,8 +35,8 @@ class WalletRepository(
     init {
         transactionRepository = TransactionRepository(transactionDao, activeWalletStateFlow)
 
-        // TODO: Maybe use main thread instead?
-        CoroutineScope(Dispatchers.Default).launch {
+        // Listen for user changes
+        CoroutineScope(Dispatchers.IO).launch {
             userStateFlow.collect {
                 if (it != null) {
                     updateWalletState(it.id)
@@ -43,7 +44,7 @@ class WalletRepository(
             }
         }
 
-
+        // Listen for new transactions
         transactionScope.launch {
             transactionRepository.transactionStateFlow.collect { transactionLists ->
                 _transactionStateFlow.value = transactionLists
@@ -69,8 +70,8 @@ class WalletRepository(
         }
     }
 
-//    // Wallet list -> Use when changing user
-    fun updateWalletState(userId: Long) {
+    // Wallet list -> Use when changing user
+    private fun updateWalletState(userId: Long) {
         // Remove previous flow processes
         walletScope.coroutineContext.cancelChildren()
         activeWalletScope.coroutineContext.cancelChildren()
@@ -85,7 +86,7 @@ class WalletRepository(
     }
 
 
-    fun getWalletId(userId: Long, walletName: String): Long {
+    private fun getWalletId(walletName: String): Long {
         // Return found wallet id, else return -1
         _walletStateFlow.value?.let { wallet ->
             return wallet.find { it.walletName == walletName}?.id ?: -1
@@ -97,7 +98,20 @@ class WalletRepository(
 
     suspend fun addWallet(wallet: Wallet): Boolean {
         val walletId = walletDao.addWallet(wallet)
-        return walletId >= 0
+        if (walletId < 0) {
+            return false
+        }
+
+        // Add initial balance transaction
+        val success = addTransaction(Transaction(
+            category = TransactionCategory.INITIAL_BALANCE,
+            amount = wallet.balance,
+            type = TransactionType.INITIAL_BALANCE,
+            note = "Initial Balance",
+            walletId = walletId
+        ))
+
+        return success
     }
 
     private suspend fun updateWallet(balance: Double, expense: Double, income: Double, walletId: Long): Boolean {
@@ -112,11 +126,12 @@ class WalletRepository(
         return affectedRows > 0
     }
 
-    suspend fun transfer(amount: Double, userId: Long, fromWalletName: String, toWalletName: String): Boolean {
+    suspend fun transfer(amount: Double, fromWalletName: String, toWalletName: String): Boolean {
         // Get ids
-        val fromWalletId = getWalletId(userId, fromWalletName)
-        val toWalletId = getWalletId(userId, toWalletName)
+        val fromWalletId = getWalletId(fromWalletName)
+        val toWalletId = getWalletId(toWalletName)
 
+        // Process transfer on each wallet
         val success = transactionRepository.transfer(amount, fromWalletId, toWalletId, fromWalletName, toWalletName)
 
         if (!success) {
@@ -156,8 +171,9 @@ class WalletRepository(
         if (!success) {
             return false
         }
-
+        // Reuse variable
         success = false
+
         // Update wallet
         activeWalletStateFlow.value?.apply {
             when (transaction.type) {
@@ -175,6 +191,15 @@ class WalletRepository(
                         balance = balance + transaction.amount,
                         expense = expense,
                         income = income + transaction.amount,
+                        walletId = transaction.walletId
+                    )
+                }
+
+                TransactionType.INITIAL_BALANCE -> {
+                    success = updateWallet(
+                        balance = transaction.amount,
+                        expense = 0.0,
+                        income = transaction.amount,
                         walletId = transaction.walletId
                     )
                 }

@@ -4,7 +4,6 @@ import com.example.walletify.TransactionCategory
 import com.example.walletify.TransactionType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,12 +19,10 @@ class TransactionRepository(
     private val _transactionStateFlow = MutableStateFlow<List<Transaction>?>(null)
     val transactionStateFlow: StateFlow<List<Transaction>?> = _transactionStateFlow.asStateFlow()
     val repositoryScope = CoroutineScope(Dispatchers.IO)
-    val repositoryDefaultScope = CoroutineScope(Dispatchers.Default)
 
     init {
         // Update transaction state to current wallet
-        // Use default thread since we're not making any external calls, nor UI changes
-        repositoryDefaultScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             activeWalletStateFlow.collect { state ->
                 if (state != null) {
                     updateTransactionFlow(state.id)
@@ -56,7 +53,7 @@ class TransactionRepository(
     }
 
     suspend fun transfer(amount: Double, fromWalletId: Long, toWalletId: Long, fromWalletName: String, toWalletName: String): Boolean {
-        // Use background thread
+        // Use withContext to be able to return
         return withContext(Dispatchers.IO) {
             val fromTransaction = Transaction(
                 category = TransactionCategory.TRANSFER,

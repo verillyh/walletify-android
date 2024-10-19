@@ -52,7 +52,7 @@ class UserRepository(application: Application) {
 
         // Collect state flow from guest as default
         userScope.launch {
-//            addGuest()
+            addGuest()
             updateUserStateFlow(1)
         }
 
@@ -88,7 +88,7 @@ class UserRepository(application: Application) {
 
     suspend fun transfer(amount: Double, fromWalletName: String, toWalletName: String): Boolean {
         // TODO: Double check
-        val success = userStateFlow.value?.let { walletRepository.transfer(amount, it.id, fromWalletName, toWalletName) }
+        val success = walletRepository.transfer(amount, fromWalletName, toWalletName)
         return success ?: false
     }
 
@@ -127,7 +127,7 @@ class UserRepository(application: Application) {
         return success
     }
 
-    suspend fun addGuest() {
+    private suspend fun addGuest() {
         // Get guest user
         val result = getUserFromId(1).firstOrNull()
         // Build guest profile
@@ -196,12 +196,6 @@ class UserRepository(application: Application) {
         else if (user.password == password) {
             // Update all state flows
             updateUserStateFlow(user.id)
-
-            // TODO: Redundant??
-//            walletRepository.updateActiveWalletState("Main")
-            // TODO: Implement flow in transaciton repository instead
-//            transactionRepository.updateTransactionFlow(user.id)
-
             return true
         }
         // Default case

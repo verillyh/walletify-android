@@ -19,7 +19,7 @@ class DataConverters {
     // Convert stored string back to enum
     @TypeConverter
     fun toTransactionCategory(category: String): TransactionCategory {
-        return TransactionCategory.valueOf(category) // Retrieve enum from the string
+        return TransactionCategory.valueOf(category)
     }
 
     // Convert LocalDate to a string
@@ -36,11 +36,13 @@ class DataConverters {
         }
     }
 
+    // Convert TransactionType to Char
     @TypeConverter
     fun fromTransactionType(type: TransactionType): Char {
         return type.typeCode
     }
 
+    // Convert Char to TransactionType
     @TypeConverter
     fun toTransactionType(type: Char): TransactionType {
         return TransactionType.entries.first { it.typeCode == type }

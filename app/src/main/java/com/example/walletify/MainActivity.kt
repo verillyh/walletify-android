@@ -1,19 +1,8 @@
 package com.example.walletify
 
 import android.os.Bundle
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.PopupWindow
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -26,17 +15,13 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.example.walletify.data.Transaction
-import com.example.walletify.data.TransactionsViewModel
-import com.example.walletify.data.UserViewModel
-import com.example.walletify.data.WalletViewModel
+import com.example.walletify.ui.TransactionsViewModel
+import com.example.walletify.ui.UserViewModel
+import com.example.walletify.ui.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
 class MainActivity : AppCompatActivity() {
     lateinit var navHostFragment: NavHostFragment
@@ -56,15 +41,12 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-//         Instantiate view models
+        // Instantiate view models
         userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
         walletViewModel = ViewModelProvider(this)[WalletViewModel::class.java]
-        // Add guest if no guest profile
-        lifecycleScope.launch {
-            userViewModel.addGuest()
-        }
         transactionsViewModel = ViewModelProvider(this)[TransactionsViewModel::class.java]
 
+        // Popup class
         popup = Popup(
             context = this,
             rootView = findViewById(R.id.main),

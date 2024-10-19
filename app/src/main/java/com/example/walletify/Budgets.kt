@@ -5,12 +5,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.walletify.data.WalletViewModel
+import com.example.walletify.ui.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 

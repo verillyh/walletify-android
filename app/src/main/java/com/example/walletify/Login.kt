@@ -12,11 +12,8 @@ import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
-import com.example.walletify.data.UserViewModel
+import com.example.walletify.ui.UserViewModel
 import com.google.android.material.textfield.TextInputEditText
-import androidx.lifecycle.viewModelScope
-import com.example.walletify.data.TransactionsViewModel
-import com.example.walletify.data.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 
@@ -53,6 +50,7 @@ class Login : Fragment() {
         val navController = activity?.findNavController(R.id.main_fragment)
         val userViewModel: UserViewModel by activityViewModels()
 
+        // Set wallet name to empty when in login page
         activity?.findViewById<MaterialToolbar>(R.id.topAppBar)?.subtitle = ""
 
 

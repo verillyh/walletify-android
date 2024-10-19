@@ -10,10 +10,10 @@ import android.widget.*
 import android.widget.ArrayAdapter
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.example.walletify.data.Transaction
-import com.example.walletify.data.TransactionsViewModel
-import com.example.walletify.data.UserViewModel
+import com.example.walletify.ui.TransactionsViewModel
+import com.example.walletify.ui.UserViewModel
 import com.example.walletify.data.Wallet
-import com.example.walletify.data.WalletViewModel
+import com.example.walletify.ui.WalletViewModel
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
