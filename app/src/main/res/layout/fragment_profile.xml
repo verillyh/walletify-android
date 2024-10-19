@@ -27,7 +27,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:text="Mary Cruz"
             android:textColor="@color/white"
             android:textSize="20sp"/>
         <TextView
@@ -56,7 +55,6 @@
             android:id="@+id/full_name_input_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Mary Cruz"
             android:textColor="@color/gray"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
@@ -77,7 +75,6 @@
             android:id="@+id/email_input_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/email_hint"
             android:textColor="@color/gray"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
@@ -104,13 +101,10 @@
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/save_changes"
+    <LinearLayout
+        android:id="@+id/profile_buttons_container"
         android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:text="@string/save_changes"
-        android:textColor="@color/white"
-        android:textFontWeight="500"
-        android:visibility="invisible"
-        app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+    </LinearLayout>
 </LinearLayout>

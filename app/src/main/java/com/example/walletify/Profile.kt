@@ -9,13 +9,16 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import com.example.walletify.data.TransactionsViewModel
 import com.example.walletify.data.UserViewModel
 import com.example.walletify.data.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
@@ -50,6 +53,9 @@ class Profile : Fragment() {
         // Inflate the layout for this fragment
         // TODO: Optimize code
         val layout = inflater.inflate(R.layout.fragment_profile, container, false)
+        val buttonsContainer = layout.findViewById<LinearLayout>(R.id.profile_buttons_container)
+        val saveChangesButton = inflater.inflate(R.layout.save_changes_button, buttonsContainer, false)
+        val defaultButtons = inflater.inflate(R.layout.profile_default_buttons, buttonsContainer, false)
         val edit = layout.findViewById<TextView>(R.id.user_edit)
         val userName = layout.findViewById<TextView>(R.id.user_name)
         val fullNameInputLayout = layout.findViewById<TextInputLayout>(R.id.full_name_input_layout)
@@ -59,7 +65,8 @@ class Profile : Fragment() {
         val phoneNumberInputLayout = layout.findViewById<TextInputLayout>(R.id.phone_number_input_layout)
         val phoneNumberEditText = layout.findViewById<TextInputEditText>(R.id.phone_number_edit_text)
         val toHide = layout.findViewById<LinearLayout>(R.id.on_edit_hide)
-        val saveChangesButton = layout.findViewById<Button>(R.id.save_changes)
+        val signout = defaultButtons.findViewById<Button>(R.id.signout)
+        val deleteAccount = defaultButtons.findViewById<Button>(R.id.delete_account)
         val appBar = activity?.findViewById<MaterialToolbar>(R.id.topAppBar)
         val grayColor = resources.getColor(R.color.gray, null)
         val whiteColor = resources.getColor(R.color.white, null)
@@ -83,10 +90,12 @@ class Profile : Fragment() {
 
         // Update subtitle for wallet name
         lifecycleScope.launch {
-            walletViewModel.uiState.collect { state ->
+            walletViewModel.activeWalletState.collect { state ->
                 appBar?.subtitle = state.walletName
             }
         }
+
+        buttonsContainer.addView(defaultButtons)
 
         // Edit logic
         edit.setOnClickListener {
@@ -98,7 +107,8 @@ class Profile : Fragment() {
             phoneNumberInputLayout.isEnabled = true
             phoneNumberEditText.setTextColor(whiteColor)
             toHide.isVisible = false
-            saveChangesButton.isVisible = true
+            buttonsContainer.removeAllViews()
+            buttonsContainer.addView(saveChangesButton)
         }
 
         // On click save button
@@ -110,7 +120,8 @@ class Profile : Fragment() {
             phoneNumberInputLayout.isEnabled = false
             phoneNumberEditText.setTextColor(grayColor)
             toHide.isVisible = true
-            saveChangesButton.isVisible = false
+            buttonsContainer.removeAllViews()
+            buttonsContainer.addView(defaultButtons)
 
             // Save new details
             lifecycleScope.launch {
@@ -122,6 +133,56 @@ class Profile : Fragment() {
             }
         }
 
+        signout.setOnClickListener {
+            container?.let {
+                MaterialAlertDialogBuilder(it.context)
+                    .setTitle(resources.getString(R.string.signout))
+                    .setMessage(resources.getString(R.string.signout_confirmation))
+                    .setNeutralButton(resources.getString(R.string.cancel)) { dialog, which -> }
+                    .setPositiveButton(resources.getString(R.string.signout)) { dialog, which ->
+                        lifecycleScope.launch {
+                            val success = userViewModel.signout()
+
+                            if (success) {
+                                Toast.makeText(activity, "Signed out! Using guess account...", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                            else {
+                                Toast.makeText(activity, "Something went wrong, please try again", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+
+                            navController?.navigate(R.id.home)
+                        }
+                    }
+                    .show()
+            }
+        }
+
+        deleteAccount.setOnClickListener {
+            container?.let {
+                MaterialAlertDialogBuilder(it.context)
+                    .setTitle(resources.getString(R.string.delete_account))
+                    .setMessage(resources.getString(R.string.delete_account_confirmation))
+                    .setNeutralButton(resources.getString(R.string.cancel)) { dialog, which -> }
+                    .setPositiveButton(resources.getString(R.string.delete_account)) { dialog, which ->
+                        lifecycleScope.launch {
+                            val success = userViewModel.deleteAccount()
+
+                            if (success) {
+                                Toast.makeText(activity, "Account deleted!", Toast.LENGTH_SHORT)
+                                    .show()
+                                navController?.navigate(R.id.home)
+                            }
+                            else {
+                                Toast.makeText(activity, "Something went wrong, please try again", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                    }
+                    .show()
+                }
+            }
         return layout
     }
 

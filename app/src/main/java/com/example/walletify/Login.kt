@@ -52,8 +52,6 @@ class Login : Fragment() {
         val layout = inflater.inflate(R.layout.fragment_login, container, false)
         val navController = activity?.findNavController(R.id.main_fragment)
         val userViewModel: UserViewModel by activityViewModels()
-        val walletViewModel: WalletViewModel by activityViewModels()
-        val transactionsViewModel: TransactionsViewModel by activityViewModels()
 
         activity?.findViewById<MaterialToolbar>(R.id.topAppBar)?.subtitle = ""
 
@@ -66,7 +64,7 @@ class Login : Fragment() {
             val password = layout.findViewById<TextInputEditText>(R.id.password_input_edit_text).text.toString()
 
             lifecycleScope.launch {
-                val successful = userViewModel.login(email, password, walletViewModel, transactionsViewModel.repository)
+                val successful = userViewModel.login(email, password)
 
                 if (successful) {
                     Toast.makeText(activity, "Logged in!", Toast.LENGTH_SHORT)

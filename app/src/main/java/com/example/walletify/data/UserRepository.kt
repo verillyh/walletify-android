@@ -1,5 +1,6 @@
 package com.example.walletify.data
 
+import android.app.Application
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,42 +14,120 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class UserRepository(private val userDao: UserDao) {
-    val readAllData: Flow<List<User>> = userDao.getAllData()
+class UserRepository(application: Application) {
+    // Initialize Daos
+    private val walletDao: WalletDao = WalletifyDatabase.getDatabase(application).walletDao()
+    private val userDao: UserDao = WalletifyDatabase.getDatabase(application).userDao()
+    private val transactionDao: TransactionDao = WalletifyDatabase.getDatabase(application).transactionDao()
+    private val walletRepository: WalletRepository
     private val _userStateFlow = MutableStateFlow<User?>(null)
+    private val _transactionStateFlow = MutableStateFlow<List<Transaction>?>(null)
+    private val _walletStateFlow = MutableStateFlow<List<Wallet>?>(null)
+    private val _activeWalletStateFlow = MutableStateFlow<Wallet?>(null)
+    val activeWalletStateFlow: StateFlow<Wallet?> = _activeWalletStateFlow.asStateFlow()
+    val walletStateFlow: StateFlow<List<Wallet>?> = _walletStateFlow.asStateFlow()
+    val transactionStateFlow = _transactionStateFlow.asStateFlow()
     val userStateFlow: StateFlow<User?> = _userStateFlow.asStateFlow()
-    val repositoryScope = CoroutineScope(Dispatchers.IO)
+    val userScope = CoroutineScope(Dispatchers.IO)
+    val transactionScope = CoroutineScope(Dispatchers.Default)
+    val walletScope = CoroutineScope(Dispatchers.Default)
+    val activeWalletScope = CoroutineScope(Dispatchers.Default)
 
-    init {
-        // Collect state flow from guest as default
-        updateUserStateFlow(1)
-    }
+    // Singleton instance of UserRepository
+    companion object {
+        @Volatile
+        private var INSTANCE: UserRepository? = null
 
-    suspend fun addUser(user: User, walletRepository: WalletRepository): Boolean {
-        return withContext(Dispatchers.IO) {
-            // Add new user
-            val userId = userDao.insert(user)
-
-            // If fail to add, return false
-            if (userId < 0) {
-                return@withContext false
+        fun getInstance(application: Application): UserRepository {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: UserRepository(application).also { INSTANCE = it }
             }
-
-            val defaultWallet = Wallet(
-                walletName = "Main",
-                balance = 0.0,
-                expense = 0.0,
-                income = 0.0,
-                userId = userId
-            )
-
-            walletRepository.addWallet(defaultWallet)
-            Log.i("Walletify", "User and default wallet added")
-            true
         }
     }
 
-    suspend fun addGuest(walletRepository: WalletRepository) {
+    init {
+        // Initialize wallet repository
+        walletRepository = WalletRepository(walletDao, transactionDao, userStateFlow)
+
+
+        // Collect state flow from guest as default
+        userScope.launch {
+//            addGuest()
+            updateUserStateFlow(1)
+        }
+
+        // Start collecting transaction flow
+        transactionScope.launch {
+            walletRepository.transactionStateFlow.collect {transactionLists ->
+                _transactionStateFlow.value = transactionLists
+            }
+        }
+
+        // Start collecting wallet list flow
+        walletScope.launch {
+            walletRepository.walletStateFlow.collect {walletLists ->
+                _walletStateFlow.value = walletLists
+            }
+        }
+
+        // Start collecting active wallet flow
+        activeWalletScope.launch {
+            walletRepository.activeWalletStateFlow.collect { walletFlow ->
+                _activeWalletStateFlow.value = walletFlow
+            }
+        }
+    }
+
+    suspend fun addTransaction(transaction: Transaction): Boolean {
+        return walletRepository.addTransaction(transaction)
+    }
+
+    fun changeActiveWalletState(walletName: String) {
+        return walletRepository.updateActiveWalletState(walletName)
+    }
+
+    suspend fun transfer(amount: Double, fromWalletName: String, toWalletName: String): Boolean {
+        // TODO: Double check
+        val success = userStateFlow.value?.let { walletRepository.transfer(amount, it.id, fromWalletName, toWalletName) }
+        return success ?: false
+    }
+
+    suspend fun addWallet(wallet: Wallet): Boolean {
+        return walletRepository.addWallet(wallet)
+    }
+
+    suspend fun addUser(user: User): Boolean {
+        // Add new user
+        val userId = userDao.insert(user)
+
+        // If fail to add, return false
+        if (userId < 0) {
+            Log.i("Walletify", "Failed to add user")
+            return false
+        }
+
+        // Build user's default wallet
+        val defaultWallet = Wallet(
+            walletName = "Main",
+            balance = 0.0,
+            expense = 0.0,
+            income = 0.0,
+            userId = userId
+        )
+
+
+        val success = walletRepository.addWallet(defaultWallet)
+        if (success) {
+            Log.i("Walletify", "Failed to add default wallet")
+        }
+        else {
+            Log.i("Walletify", "User and default wallet added")
+        }
+
+        return success
+    }
+
+    suspend fun addGuest() {
         // Get guest user
         val result = getUserFromId(1).firstOrNull()
         // Build guest profile
@@ -61,7 +140,7 @@ class UserRepository(private val userDao: UserDao) {
         )
         // If no guest user, add it
         if (result == null) {
-            addUser(guest, walletRepository)
+            addUser(guest)
         }
     }
 
@@ -75,62 +154,81 @@ class UserRepository(private val userDao: UserDao) {
                 return@withContext false
             }
 
-            updateUserStateFlow(id)
-            Log.i("Walletify", "User details updated")
-            true
+            // TODO: Redundant??
+            val success = updateUserStateFlow(id)
+            if (success) {
+                Log.i("Walletify", "User details updated")
+                true
+            }
+            else {
+                Log.i("Walletify", "Failed to update user details")
+                false
+            }
         }
-    }
-
-    private suspend fun getUserIdFromEmail(email: String): Long? {
-        val result = userDao.getUserIdFromEmail(email) ?: return null
-
-        return result
     }
 
     suspend fun getUserFromEmail(email: String): User? {
-        val userId = getUserIdFromEmail(email) ?: return null
-
-        return userDao.getUserFromId(userId).first()
+        return userDao.getUserFromEmail(email)
     }
 
-    fun updateUserStateFlow(id: Long) {
+    fun updateUserStateFlow(id: Long): Boolean  {
         // Cancel previous flow
-        repositoryScope.coroutineContext.cancelChildren()
+        userScope.coroutineContext.cancelChildren()
 
         // Collect new state
-        repositoryScope.launch {
-            val user = getUserFromId(id).firstOrNull()
-            if (user != null) {
+        userScope.launch {
+            getUserFromId(id).collect {user ->
                 _userStateFlow.value = user
+    //            return@collect true
             }
+        }
+        return true
+    }
+
+    suspend fun login(email: String, password: String): Boolean {
+        // Use main thread, because we're updating state
+        val user = getUserFromEmail(email)
+
+        if (user == null) {
+            return false
+        }
+        // Else if found
+        else if (user.password == password) {
+            // Update all state flows
+            updateUserStateFlow(user.id)
+
+            // TODO: Redundant??
+//            walletRepository.updateActiveWalletState("Main")
+            // TODO: Implement flow in transaciton repository instead
+//            transactionRepository.updateTransactionFlow(user.id)
+
+            return true
+        }
+        // Default case
+        else {
+            return false
         }
     }
 
-    suspend fun login(email: String, password: String, walletViewModel: WalletViewModel, transactionRepository: TransactionRepository): Boolean {
+    suspend fun signout(): Boolean {
         return withContext(Dispatchers.IO) {
-            val user = getUserFromEmail(email)
+            val guestUser = getUserFromId(1).first()
 
-            if (user == null) {
-                false
-            }
-            // Else if found
-            else if (user.password == password) {
-                // Update all state flows
-                updateUserStateFlow(user.id)
-                walletViewModel.repository.updateWalletState(user.id)
-                walletViewModel.changeActiveWallet(user.id, "Main")
-                transactionRepository.updateTransactionFlow(user.id)
-
-                true
-            }
-            // Default case
-            else {
-                false
-            }
+            updateUserStateFlow(guestUser.id)
         }
     }
 
     fun getUserFromId(userId: Long): Flow<User> {
         return userDao.getUserFromId(userId)
+    }
+
+    suspend fun deleteUser(userId: Long): Boolean {
+        val affectedRows = userDao.deleteUser(userId)
+        if (affectedRows <= 0) {
+            return false
+        }
+
+        signout()
+        return true
     }
 }

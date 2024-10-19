@@ -18,6 +18,11 @@
     <string name="wallet">Wallet</string>
     <string name="category">Category</string>
     <string name="date">Date</string>
+    <string name="signout">Sign out</string>
+    <string name="delete_account">Delete account</string>
+    <string name="signout_confirmation">Are you sure you want to sign out?</string>
+    <string name="delete_account_confirmation">Are you sure you want to delete your account?</string>
+    <string name="cancel">Cancel</string>
     <string name="note">Note</string>
     <string name="add_expense">Add Expense</string>
     <string name="add_income">Add Income</string>

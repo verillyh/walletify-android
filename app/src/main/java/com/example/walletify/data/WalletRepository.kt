@@ -1,5 +1,6 @@
 package com.example.walletify.data
 
+import com.example.walletify.TransactionType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelChildren
@@ -11,50 +12,95 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class WalletRepository(private val walletDao: WalletDao) {
+class WalletRepository(
+    private val walletDao: WalletDao,
+    private val transactionDao: TransactionDao,
+    private val userStateFlow: StateFlow<User?>
+) {
+    private val transactionRepository: TransactionRepository
+    private val _activeWalletStateFlow = MutableStateFlow<Wallet?>(null)
+    private val _transactionStateFlow = MutableStateFlow<List<Transaction>?>(null)
     private val _walletStateFlow = MutableStateFlow<List<Wallet>?>(null)
+    val activeWalletStateFlow: StateFlow<Wallet?> = _activeWalletStateFlow.asStateFlow()
+    val transactionStateFlow: StateFlow<List<Transaction>?> = _transactionStateFlow.asStateFlow()
     val walletStateFlow: StateFlow<List<Wallet>?> = _walletStateFlow.asStateFlow()
-    val repositoryScope = CoroutineScope(Dispatchers.IO)
+    val walletScope = CoroutineScope(Dispatchers.IO)
+    // TODO: Maybe use wallet scope instead? Or should use Dispatchers.Default?
+    val transactionScope = CoroutineScope(Dispatchers.IO)
+    // Use default, since we're not doing any database calls, nor updating UI
+    val activeWalletScope = CoroutineScope(Dispatchers.Default)
 
 
     init {
-        // Initialize wallet state
-        // 1 for guest default wallet
-        updateWalletState(1)
-    }
+        transactionRepository = TransactionRepository(transactionDao, activeWalletStateFlow)
 
-   private fun getWalletsFromUserId(userId: Long): Flow<List<Wallet>> {
-       val wallet = walletDao.getUserWallets(userId)
+        // TODO: Maybe use main thread instead?
+        CoroutineScope(Dispatchers.Default).launch {
+            userStateFlow.collect {
+                if (it != null) {
+                    updateWalletState(it.id)
+                }
+            }
+        }
 
-       return wallet
-   }
 
-    fun updateWalletState(userId: Long) {
-        // Remove previous flow processes
-        repositoryScope.coroutineContext.cancelChildren()
-
-        repositoryScope.launch {
-            getWalletsFromUserId(userId).collect { wallet ->
-                _walletStateFlow.value = wallet
+        transactionScope.launch {
+            transactionRepository.transactionStateFlow.collect { transactionLists ->
+                _transactionStateFlow.value = transactionLists
             }
         }
     }
 
-    suspend fun getWalletId(userId: Long, walletName: String): Long {
-        return withContext(Dispatchers.IO) {
-            walletDao.getWalletId(userId, walletName)
+    private fun getWalletsFromUserId(userId: Long): Flow<List<Wallet>> {
+       val wallet = walletDao.getUserWallets(userId)
+
+       return wallet
+    }
+
+    // Active wallet -> Use when changing wallet
+    fun updateActiveWalletState(walletName: String) {
+        activeWalletScope.coroutineContext.cancelChildren()
+
+        // Search wallet state, and collect wallet based on name
+        activeWalletScope.launch {
+            _walletStateFlow.collect { state ->
+                _activeWalletStateFlow.value = _walletStateFlow.first()?.find { it.walletName == walletName }
+            }
         }
+    }
+
+//    // Wallet list -> Use when changing user
+    fun updateWalletState(userId: Long) {
+        // Remove previous flow processes
+        walletScope.coroutineContext.cancelChildren()
+        activeWalletScope.coroutineContext.cancelChildren()
+
+        // Collect wallet lists from user ID
+        walletScope.launch {
+            getWalletsFromUserId(userId).collect { wallet ->
+                _walletStateFlow.value = wallet
+            }
+        }
+        updateActiveWalletState("Main")
+    }
+
+
+    fun getWalletId(userId: Long, walletName: String): Long {
+        // Return found wallet id, else return -1
+        _walletStateFlow.value?.let { wallet ->
+            return wallet.find { it.walletName == walletName}?.id ?: -1
+        }
+
+        // Default case
+        return -1
     }
 
     suspend fun addWallet(wallet: Wallet): Boolean {
         val walletId = walletDao.addWallet(wallet)
-        if (walletId < 0) {
-            return false
-        }
-        return true
+        return walletId >= 0
     }
 
-    suspend fun updateWallet(balance: Double, expense: Double, income: Double, walletId: Long): Int {
+    private suspend fun updateWallet(balance: Double, expense: Double, income: Double, walletId: Long): Boolean {
         // Update wallet in database
         val affectedRows = walletDao.updateWallet(
             balance = balance,
@@ -63,12 +109,78 @@ class WalletRepository(private val walletDao: WalletDao) {
             id = walletId
         )
 
-        // If no rows were affected, then return -1
-        if (affectedRows <= 0 ){
-            return -1
+        return affectedRows > 0
+    }
+
+    suspend fun transfer(amount: Double, userId: Long, fromWalletName: String, toWalletName: String): Boolean {
+        // Get ids
+        val fromWalletId = getWalletId(userId, fromWalletName)
+        val toWalletId = getWalletId(userId, toWalletName)
+
+        val success = transactionRepository.transfer(amount, fromWalletId, toWalletId, fromWalletName, toWalletName)
+
+        if (!success) {
+            return false
         }
 
-        // Update wallet state to reflect in UI
-        return affectedRows
+        // TODO: Maybe have this automatically done when there's an entry in transaction?
+        // Update wallet after transaction
+        activeWalletStateFlow.value?.apply {
+            val updateSourceWalletSuccess = updateWallet(
+                balance = balance - amount,
+                expense = expense + amount,
+                income = income,
+                walletId = fromWalletId
+            )
+
+            if (!updateSourceWalletSuccess) {
+                return false
+            }
+
+            val updateDestWalletSuccess = updateWallet(
+                balance = balance + amount,
+                expense = expense,
+                income = income + amount,
+                walletId = toWalletId
+            )
+            return updateDestWalletSuccess
+        }
+
+        // If active wallet state is empty, then return false
+        return false
+    }
+
+    suspend fun addTransaction(transaction: Transaction): Boolean  {
+        var success = transactionRepository.addTransaction(transaction)
+
+        if (!success) {
+            return false
+        }
+
+        success = false
+        // Update wallet
+        activeWalletStateFlow.value?.apply {
+            when (transaction.type) {
+                TransactionType.EXPENSE, TransactionType.SOURCE_TRANSFER -> {
+                    success = updateWallet(
+                        balance = balance - transaction.amount,
+                        expense = expense + transaction.amount,
+                        income = income,
+                        walletId = transaction.walletId
+                    )
+                }
+
+                TransactionType.INCOME, TransactionType.DESTINATION_TRANSFER -> {
+                    success = updateWallet(
+                        balance = balance + transaction.amount,
+                        expense = expense,
+                        income = income + transaction.amount,
+                        walletId = transaction.walletId
+                    )
+                }
+            }
+        }
+
+        return success
     }
 }

@@ -1,6 +1,7 @@
 package com.example.walletify.data
 
 import com.example.walletify.TransactionCategory
+import com.example.walletify.TransactionType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -12,28 +13,35 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TransactionRepository(private val transactionDao: TransactionDao, private val walletViewModel: WalletViewModel) {
+class TransactionRepository(
+    private val transactionDao: TransactionDao,
+    private val activeWalletStateFlow: StateFlow<Wallet?>
+) {
     private val _transactionStateFlow = MutableStateFlow<List<Transaction>?>(null)
     val transactionStateFlow: StateFlow<List<Transaction>?> = _transactionStateFlow.asStateFlow()
     val repositoryScope = CoroutineScope(Dispatchers.IO)
-    val repositoryMainScope = CoroutineScope(Dispatchers.Main)
+    val repositoryDefaultScope = CoroutineScope(Dispatchers.Default)
 
     init {
         // Update transaction state to current wallet
-        repositoryMainScope.launch {
-            walletViewModel.uiState.collect { state ->
-               updateTransactionFlow(state.id)
+        // Use default thread since we're not making any external calls, nor UI changes
+        repositoryDefaultScope.launch {
+            activeWalletStateFlow.collect { state ->
+                if (state != null) {
+                    updateTransactionFlow(state.id)
+                }
             }
         }
     }
 
-    fun getWalletTransactions(walletId: Long): Flow<List<Transaction>> {
+    private fun getWalletTransactions(walletId: Long): Flow<List<Transaction>> {
         return transactionDao.getWalletTransactions(walletId)
     }
 
-    fun updateTransactionFlow(walletId: Long) {
+    private fun updateTransactionFlow(walletId: Long) {
         repositoryScope.coroutineContext.cancelChildren()
 
+        // Use background thread since we're doing database calls
         repositoryScope.launch {
             getWalletTransactions(walletId).collect { transactions ->
                 _transactionStateFlow.value = transactions
@@ -41,84 +49,42 @@ class TransactionRepository(private val transactionDao: TransactionDao, private 
         }
     }
 
-    suspend fun addTransaction(transaction: Transaction, walletRepository: WalletRepository, currentBalance: Double, currentExpense: Double, currentIncome: Double): Boolean {
+    suspend fun addTransaction(transaction: Transaction): Boolean {
         // Add transaction
         val transactionId = transactionDao.addTransaction(transaction)
-
-        if (transactionId < 0) {
-            return false
-        }
-
-        var result = -1
-
-        // Update wallet
-        when (transaction.type) {
-            'E' -> {
-                result = walletRepository.updateWallet(
-                    balance = currentBalance - transaction.amount,
-                    expense = currentExpense + transaction.amount,
-                    income = currentIncome,
-                    walletId = transaction.walletId
-                )
-            }
-            'I' -> {
-                result = walletRepository.updateWallet(
-                    balance = currentBalance + transaction.amount,
-                    expense = currentExpense,
-                    income = currentIncome + transaction.amount,
-                    walletId = transaction.walletId
-                )
-            }
-        }
-
-        return result > 0
+        return transactionId >= 0
     }
 
-    suspend fun transfer(amount: Double, fromWalletName: String, toWalletName: String, userId: Long): Boolean {
+    suspend fun transfer(amount: Double, fromWalletId: Long, toWalletId: Long, fromWalletName: String, toWalletName: String): Boolean {
+        // Use background thread
         return withContext(Dispatchers.IO) {
-            // Get wallet ids
-            val fromWalletId = walletViewModel.repository.getWalletId(userId, fromWalletName)
-            val toWalletId = walletViewModel.repository.getWalletId(userId, toWalletName)
+            val fromTransaction = Transaction(
+                category = TransactionCategory.TRANSFER,
+                amount = amount,
+                type = TransactionType.SOURCE_TRANSFER,
+                note = "Transfer to $toWalletName",
+                walletId = fromWalletId,
+            )
+            val toTransaction = Transaction(
+                category = TransactionCategory.TRANSFER,
+                amount = amount,
+                type = TransactionType.DESTINATION_TRANSFER,
+                note = "Transfer from $fromWalletName",
+                walletId = toWalletId,
+            )
 
             // Transaction on source wallet
-            transactionDao.addTransaction(
-                Transaction(
-                    category = TransactionCategory.TRANSFER,
-                    amount = amount,
-                    type = 'F',
-                    note = "Transfer to $toWalletName",
-                    walletId = fromWalletId
-                )
-            )
-            // Transaction on destination wallet
-            transactionDao.addTransaction(
-                Transaction(
-                    category = TransactionCategory.TRANSFER,
-                    amount = amount,
-                    type = 'T',
-                    note = "Transfer from $fromWalletName",
-                    walletId = toWalletId,
-                )
-            )
+            val entryId1 = transactionDao.addTransaction(fromTransaction)
 
-            // Update wallet values
-            // TODO: Maybe have the wallet state change automatically on every transaction?
-            walletViewModel.uiState.value.apply {
-                walletViewModel.repository.updateWallet(
-                    balance = balance - amount,
-                    expense = expense + amount,
-                    income = income,
-                    walletId = fromWalletId
-                )
-                walletViewModel.repository.updateWallet(
-                    balance = balance + amount,
-                    expense = expense,
-                    income = income + amount,
-                    walletId = toWalletId
-                )
+            // If first transaction failed, return false
+            if (entryId1 < 0) {
+                return@withContext false
             }
 
-            true
+            // Transaction on destination wallet
+            val entryId2 = transactionDao.addTransaction(toTransaction)
+
+            entryId2 >= 0
         }
     }
 }

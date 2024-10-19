@@ -11,14 +11,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class TransactionsViewModel(application: Application, walletViewModel: WalletViewModel): AndroidViewModel(application) {
+class TransactionsViewModel(application: Application): AndroidViewModel(application) {
     private val _allUserTransactions = MutableStateFlow<List<Transaction>?>(null)
     val allUserTransactions: StateFlow<List<Transaction>?> = _allUserTransactions.asStateFlow()
-    val repository: TransactionRepository
+    // Initialize repository
+    val repository: UserRepository = UserRepository.getInstance(application)
 
     init {
-        val transactionDao = WalletifyDatabase.getDatabase(application).transactionDao()
-        repository = TransactionRepository(transactionDao, walletViewModel)
 
         // Collect flow from repository
         viewModelScope.launch {
@@ -28,29 +27,12 @@ class TransactionsViewModel(application: Application, walletViewModel: WalletVie
         }
     }
 
-    suspend fun addUserTransaction(transaction: Transaction, walletRepository: WalletRepository, currentBalance: Double, currentExpense: Double, currentIncome: Double): Boolean {
+    suspend fun addUserTransaction(transaction: Transaction): Boolean {
         // Add transaction
-        val success = repository.addTransaction(transaction, walletRepository, currentBalance, currentExpense, currentIncome)
-        if (!success) {
-            return false
-        }
-        return true
+        return repository.addTransaction(transaction)
     }
 
-    suspend fun transfer(amount: Double, fromWalletName: String, toWalletName: String, userId: Long): Boolean {
-        return repository.transfer(amount, fromWalletName, toWalletName, userId)
-    }
-
-    // Factory
-    companion object {
-        fun provideFactory(application: Application, walletViewModel: WalletViewModel): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                if (modelClass.isAssignableFrom(TransactionsViewModel::class.java)) {
-                    @Suppress("UNCHECKED_CAST")
-                    return TransactionsViewModel(application, walletViewModel) as T
-                }
-                throw IllegalArgumentException("Unknown ViewModel class")
-            }
-        }
+    suspend fun transfer(amount: Double, fromWalletName: String, toWalletName: String): Boolean {
+        return repository.transfer(amount, fromWalletName, toWalletName)
     }
 }

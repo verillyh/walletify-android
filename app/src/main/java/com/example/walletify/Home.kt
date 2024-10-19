@@ -60,7 +60,7 @@ class Home : Fragment() {
 
         // Update cashflow, income, expense
         lifecycleScope.launch {
-            walletViewModel.uiState.collect { state ->
+            walletViewModel.activeWalletState.collect { state ->
                 // Main balance screen
                 balance.text = String.format("$" + state.balance.toString())
                 expense.text = String.format("$" + state.expense.toString())

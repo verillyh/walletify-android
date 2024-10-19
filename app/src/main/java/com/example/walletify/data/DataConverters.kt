@@ -2,6 +2,7 @@ package com.example.walletify.data
 
 import androidx.room.TypeConverter
 import com.example.walletify.TransactionCategory
+import com.example.walletify.TransactionType
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -11,13 +12,13 @@ class DataConverters {
 
     // Store enum as string
     @TypeConverter
-    fun fromExpenseCategory(category: TransactionCategory): String {
+    fun fromTransactionCategory(category: TransactionCategory): String {
         return category.name
     }
 
     // Convert stored string back to enum
     @TypeConverter
-    fun toExpenseCategory(category: String): TransactionCategory {
+    fun toTransactionCategory(category: String): TransactionCategory {
         return TransactionCategory.valueOf(category) // Retrieve enum from the string
     }
 
@@ -33,5 +34,15 @@ class DataConverters {
         return dateString?.let {
             LocalDateTime.parse(it, datetimeFormat)
         }
+    }
+
+    @TypeConverter
+    fun fromTransactionType(type: TransactionType): Char {
+        return type.typeCode
+    }
+
+    @TypeConverter
+    fun toTransactionType(type: Char): TransactionType {
+        return TransactionType.entries.first { it.typeCode == type }
     }
 }

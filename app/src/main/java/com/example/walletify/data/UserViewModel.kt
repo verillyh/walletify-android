@@ -25,21 +25,14 @@ data class UserUiState(
 class UserViewModel(application: Application): AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(UserUiState())
     val uiState: StateFlow<UserUiState> = _uiState.asStateFlow()
-
-    val allUserData: Flow<List<User>>
     val repository: UserRepository
 
     init {
-        // Get user DAO from database
-        val userDao = WalletifyDatabase.getDatabase(application).userDao()
-
         // Get repository
-        repository = UserRepository(userDao)
-        // Get the user's table data
-        allUserData = repository.readAllData
+        repository = UserRepository.getInstance(application)
 
         // Set UI state to be the current user
-        viewModelScope.launch {
+            viewModelScope.launch {
             repository.userStateFlow.collect { user ->
                 user?.let {
                     _uiState.update { state ->
@@ -55,21 +48,20 @@ class UserViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    suspend fun addUser(user: User, walletRepository: WalletRepository): Boolean {
-        return repository.addUser(user, walletRepository)
+    suspend fun addUser(user: User): Boolean {
+        return repository.addUser(user)
     }
 
-    suspend fun addGuest(walletRepository: WalletRepository) {
-        repository.addGuest(walletRepository)
+    suspend fun addGuest() {
+        repository.addGuest()
     }
 
     suspend fun updateDetails(fullName: String, phoneNumber: String, email: String): Boolean {
-        val success = repository.updateUserDetails(fullName, phoneNumber, email, _uiState.value.id)
-        return success
+        return repository.updateUserDetails(fullName, phoneNumber, email, _uiState.value.id)
     }
 
-    suspend fun login(email: String, password: String, walletViewModel: WalletViewModel, transactionRepository: TransactionRepository): Boolean {
-        val success = repository.login(email, password, walletViewModel, transactionRepository)
+    suspend fun login(email: String, password: String): Boolean {
+        val success = repository.login(email, password)
 
         // If can't login
         if (!success) {
@@ -85,5 +77,24 @@ class UserViewModel(application: Application): AndroidViewModel(application) {
             }
             return true
         }
+    }
+
+    suspend fun signout(): Boolean {
+        val success = repository.signout()
+
+        if (success) {
+            _uiState.update { state ->
+                state.copy (
+                    loggedIn = false
+                )
+            }
+        }
+
+        return success
+    }
+
+
+    suspend fun deleteAccount(): Boolean {
+        return repository.deleteUser(_uiState.value.id)
     }
 }

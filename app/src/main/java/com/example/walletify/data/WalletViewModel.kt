@@ -23,15 +23,12 @@ data class WalletUiState(
 class WalletViewModel(application: Application): AndroidViewModel(application) {
     val _allUserWallets = MutableStateFlow<List<Wallet>?>(null)
     val allUserWallets: StateFlow<List<Wallet>?> = _allUserWallets.asStateFlow()
-    private val _uiState = MutableStateFlow(WalletUiState())
-    val uiState: StateFlow<WalletUiState> = _uiState.asStateFlow()
-    val repository: WalletRepository
+    private val _activeWalletState = MutableStateFlow(WalletUiState())
+    val activeWalletState: StateFlow<WalletUiState> = _activeWalletState.asStateFlow()
+    val repository: UserRepository = UserRepository.getInstance(application)
 
     init {
-        val walletDao = WalletifyDatabase.getDatabase(application).walletDao()
-        repository = WalletRepository(walletDao)
-
-        // Update UI state based on repo's state flow
+        // Update wallet list UI state based on repo's state flow
         // Use main thread since it's only to update state
         viewModelScope.launch {
             repository.walletStateFlow.collect { walletState ->
@@ -42,8 +39,22 @@ class WalletViewModel(application: Application): AndroidViewModel(application) {
             }
         }
 
+        // Update active wallet UI state
         viewModelScope.launch {
-            changeActiveWallet(1, "Main")
+            repository.activeWalletStateFlow.collect { state ->
+                state?.let {
+                    _activeWalletState.update {uiState ->
+                        uiState.copy(
+                            walletName = it.walletName,
+                            balance = it.balance,
+                            expense = it.expense,
+                            income = it.income,
+                            userId = it.userId,
+                            id = it.id
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -51,43 +62,7 @@ class WalletViewModel(application: Application): AndroidViewModel(application) {
         return repository.addWallet(wallet)
     }
 
-    suspend fun getWalletId(userId: Long, walletName: String): Long {
-        return repository.getWalletId(userId, walletName)
-    }
-
-    fun changeActiveWallet(userId: Long, walletName: String) {
-        viewModelScope.launch {
-            val walletId = getWalletId(userId, walletName)
-            _allUserWallets.collect {walletList ->
-                // Get wallet to be active
-                val activeWallet = walletList?.find { it.id == walletId }
-
-                // Update the UI state
-                activeWallet?.let {
-                    _uiState.update { state ->
-                        state.copy(
-                            walletName = activeWallet.walletName,
-                            balance = String.format(
-                                Locale("en", "AU"),
-                                "%.2f",
-                                activeWallet.balance
-                            )
-                                .toDouble(),
-                            expense = String.format(
-                                Locale("en", "AU"),
-                                "%.2f",
-                                activeWallet.expense
-                            )
-                                .toDouble(),
-                            income = String.format(Locale("en", "AU"), "%.2f", activeWallet.income)
-                                .toDouble(),
-                            userId = activeWallet.userId,
-                            id = activeWallet.id
-                        )
-                    }
-                }
-                Log.i("Walletify", "Wallet UI state changed")
-            }
-        }
+    fun changeActiveWallet(walletName: String) {
+        return repository.changeActiveWalletState(walletName)
     }
 }

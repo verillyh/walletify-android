@@ -40,7 +40,7 @@ class TransactionItemAdapter(): RecyclerView.Adapter<TransactionItemAdapter.View
     }
 
     fun setData(transactions: List<Transaction>) {
-        this.transactionList = transactions
+        this.transactionList = transactions.reversed()
         notifyDataSetChanged()
     }
 }

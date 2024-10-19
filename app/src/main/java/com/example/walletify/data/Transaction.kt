@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.example.walletify.TransactionCategory
+import com.example.walletify.TransactionType
 import java.time.LocalDateTime
 
 @Entity(
@@ -22,7 +23,7 @@ import java.time.LocalDateTime
 data class Transaction(
     @ColumnInfo(name = "category") val category: TransactionCategory,
     @ColumnInfo(name = "amount") val amount: Double,
-    @ColumnInfo(name = "type") val type: Char,
+    @ColumnInfo(name = "type") val type: TransactionType,
     @ColumnInfo(name = "note") val note: String,
     @ColumnInfo(name = "datetime") val datetime: LocalDateTime = LocalDateTime.now(),
     @ColumnInfo(name = "wallet_id") val walletId: Long,

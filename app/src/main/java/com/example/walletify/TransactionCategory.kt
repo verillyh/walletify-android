@@ -15,5 +15,6 @@ enum class TransactionCategory(val displayName: String, val imageResId: Int) {
     CLOTHING("Clothing", R.drawable.clothing_icon),
     MISCELLANEOUS("Miscellaneous", R.drawable.miscellaneous_icon),
     INCOME("Income", R.drawable.income_icon),
-    TRANSFER("Transfer", R.drawable.transfer_icon)
+    TRANSFER("Transfer", R.drawable.transfer_icon),
+    INITIAL_BALANCE("Initial Balance", R.drawable.initial_balance_icon)
 }

@@ -46,7 +46,9 @@ class Popup(
         // Set expense category input
         val expenseCategoryDropdown = expenseLayout.findViewById<AutoCompleteTextView>(R.id.expense_category)
         // Display all categories except income and transfer
-        val expenseCategories = TransactionCategory.entries.filter {it.displayName != "Income" && it.displayName != "Transfer"}.map { it.displayName }
+        val expenseCategories = TransactionCategory.entries
+            .filter { it.displayName != "Income" && it.displayName != "Transfer" && it.displayName != "Initial Balance"}
+            .map { it.displayName }
         expenseCategoryDropdown.setAdapter(ArrayAdapter(
             context,
             android.R.layout.simple_dropdown_item_1line,
@@ -56,13 +58,13 @@ class Popup(
 
         // On add expense
         expenseLayout.findViewById<Button>(R.id.entry_expense_add).setOnClickListener {
-            onAddEntry(expenseLayout, 'E')
+            onAddEntry(expenseLayout, TransactionType.EXPENSE)
             popupWindow.dismiss()
         }
 
         // On add income
         incomeLayout.findViewById<Button>(R.id.entry_income_add).setOnClickListener {
-            onAddEntry(incomeLayout, 'I')
+            onAddEntry(incomeLayout, TransactionType.INCOME)
             popupWindow.dismiss()
         }
 
@@ -113,7 +115,7 @@ class Popup(
         // Change wallet logic
         changeLayout.findViewById<AutoCompleteTextView>(R.id.change_wallet_dropdown).setOnItemClickListener { parent, view, index, id ->
             val selected = parent.getItemAtPosition(index).toString()
-            walletViewModel.changeActiveWallet(userViewModel.uiState.value.id, selected)
+            walletViewModel.changeActiveWallet(selected)
             popupWindow.dismiss()
         }
 
@@ -159,7 +161,7 @@ class Popup(
 
 
         lifecycleScope.launch {
-            val success = transactionsViewModel.transfer(amount, fromWalletName, toWalletName, userViewModel.uiState.value.id)
+            val success = transactionsViewModel.transfer(amount, fromWalletName, toWalletName)
 
             if (!success) {
                     Toast.makeText(context, "Transferred success!", Toast.LENGTH_SHORT)
@@ -188,7 +190,7 @@ class Popup(
                         )
                     )
                     // Set first wallet as default option
-                    dropdown.setText(walletNames[0], false)
+                    dropdown.setText(walletViewModel.activeWalletState.value.walletName, false)
                 }
 
             }
@@ -226,16 +228,16 @@ class Popup(
             }
         }
 
-        walletViewModel.changeActiveWallet(userId, wallet.walletName)
+        walletViewModel.changeActiveWallet(wallet.walletName)
     }
 
-    private fun onAddEntry(parentLayout: View, type: Char) {
+    private fun onAddEntry(parentLayout: View, type: TransactionType) {
         val amount = parentLayout.findViewById<TextInputEditText>(R.id.amount_input_edit_text).text.toString()
         val note = parentLayout.findViewById<TextInputEditText>(R.id.note_input_edit_text).text.toString()
         var category = TransactionCategory.INCOME
 
         // If of type expense, populate category text field
-        if (type == 'E') {
+        if (type == TransactionType.EXPENSE) {
             val selected = parentLayout.findViewById<AutoCompleteTextView>(R.id.expense_category).text.toString()
             if (selected == "") {
                 Toast.makeText(context, "Please select a category", Toast.LENGTH_SHORT)
@@ -252,14 +254,14 @@ class Popup(
             type = type,
             note = note,
             datetime = LocalDateTime.now(),
-            walletId = walletViewModel.uiState.value.id
+            walletId = walletViewModel.activeWalletState.value.id
         )
 
         // Add transaction
         lifecycleScope.launch {
             var success = false
-            walletViewModel.uiState.value.apply {
-                success = transactionsViewModel.addUserTransaction(transaction, walletViewModel.repository, balance, expense, income)
+            walletViewModel.activeWalletState.value.apply {
+                success = transactionsViewModel.addUserTransaction(transaction)
             }
 
             if (success) {

@@ -10,6 +10,19 @@
         <!--        <item name="actionBarTheme">@style/TopAppBar.Style</item>-->
         <item name="bottomNavigationStyle">@style/App.NavigationView</item>
         <item name="materialButtonOutlinedStyle">@style/App.Button.Outlined</item>
+        <item name="materialAlertDialogTheme">@style/App.Dialog</item>
+    </style>
+    <style name="App.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurfaceContainerHigh">@color/off_black</item>
+        <item name="buttonBarNeutralButtonStyle">@style/App.Dialog.Button.Neutral</item>
+        <item name="buttonBarPositiveButtonStyle">@style/App.Dialog.Button.Positive</item>
+    </style>
+    <style name="App.Dialog.Button.Neutral" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/white</item>
+    </style>
+    <style name="App.Dialog.Button.Positive" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/red</item>
+        <item name="android:textFontWeight">600</item>
     </style>
     <style name="App.NavigationView" parent="Widget.Material3.BottomNavigationView">
         <item name="materialThemeOverlay">@style/App.NavigationView.ThemeOverlay</item>

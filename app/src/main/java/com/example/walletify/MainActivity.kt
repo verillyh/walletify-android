@@ -47,7 +47,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var walletViewModel: WalletViewModel
     lateinit var popup: Popup
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -57,14 +56,14 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        // Instantiate view models
-        walletViewModel = ViewModelProvider(this)[WalletViewModel::class.java]
+//         Instantiate view models
         userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
-        transactionsViewModel = ViewModelProvider(this, TransactionsViewModel.provideFactory(application, walletViewModel))[TransactionsViewModel::class.java]
+        walletViewModel = ViewModelProvider(this)[WalletViewModel::class.java]
         // Add guest if no guest profile
         lifecycleScope.launch {
-            userViewModel.addGuest(walletViewModel.repository)
+            userViewModel.addGuest()
         }
+        transactionsViewModel = ViewModelProvider(this)[TransactionsViewModel::class.java]
 
         popup = Popup(
             context = this,
@@ -89,7 +88,7 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         bottomNavigationView.setupWithNavController(navController)
         lifecycleScope.launch {
-            walletViewModel.uiState.collect { state ->
+            walletViewModel.activeWalletState.collect { state ->
                 appBar.subtitle = state.walletName
             }
         }

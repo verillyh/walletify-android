@@ -49,7 +49,7 @@ class Budgets : Fragment() {
 
         // Update subtitle for wallet name
         lifecycleScope.launch {
-            walletViewModel.uiState.collect { state ->
+            walletViewModel.activeWalletState.collect { state ->
                 appBar?.subtitle = state.walletName
             }
         }

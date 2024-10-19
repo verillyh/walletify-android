@@ -71,8 +71,7 @@ class Signup : Fragment() {
                         email = userEmail,
                         phoneNumber = userPhoneNumber,
                         password = userPassword
-                    ),
-                    walletViewModel.repository
+                    )
                 )
 
                 // If successfully added, show success toast
