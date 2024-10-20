@@ -68,14 +68,14 @@
                 android:layout_marginEnd="2dp"
                 app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.ExtraSmall"
                 style="@style/App.Button.Entry"/>
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/entry_budget"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/budgets"
-                android:backgroundTint="@color/button_checkable"
-                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.ExtraSmall"
-                style="@style/App.Button.Entry"/>
+<!--            <com.google.android.material.button.MaterialButton-->
+<!--                android:id="@+id/entry_budget"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="@string/budgets"-->
+<!--                android:backgroundTint="@color/button_checkable"-->
+<!--                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.ExtraSmall"-->
+<!--                style="@style/App.Button.Entry"/>-->
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <LinearLayout

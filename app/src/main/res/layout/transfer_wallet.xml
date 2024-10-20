@@ -24,6 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
+            android:inputType="number"
             style="@style/App.Input.Layout"/>
     </com.google.android.material.textfield.TextInputLayout>
     <TextView

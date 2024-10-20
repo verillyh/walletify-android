@@ -9,19 +9,19 @@
         android:contentDescription="@string/home"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction" />
-    <item
-        android:id="@+id/analysis"
-        android:icon="@drawable/analysis_icon"
-        android:title="@string/analysis"
-        android:contentDescription="@string/analysis"
-        app:showAsAction="always"/>
+<!--    <item-->
+<!--        android:id="@+id/analysis"-->
+<!--        android:icon="@drawable/analysis_icon"-->
+<!--        android:title="@string/analysis"-->
+<!--        android:contentDescription="@string/analysis"-->
+<!--        app:showAsAction="always"/>-->
 
-    <item
-        android:id="@+id/budgets"
-        android:icon="@drawable/budget_icon"
-        android:title="@string/budgets"
-        android:contentDescription="@string/budgets"
-        app:showAsAction="always"/>
+<!--    <item-->
+<!--        android:id="@+id/budgets"-->
+<!--        android:icon="@drawable/budget_icon"-->
+<!--        android:title="@string/budgets"-->
+<!--        android:contentDescription="@string/budgets"-->
+<!--        app:showAsAction="always"/>-->
 
     <item
         android:id="@+id/profile"

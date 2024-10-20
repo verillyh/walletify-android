@@ -3,6 +3,7 @@ package com.example.walletify
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.main_fragment) as NavHostFragment
         navController = navHostFragment.navController
         appBarConfiguration =
-            AppBarConfiguration(setOf(R.id.home, R.id.analysis, R.id.budgets, R.id.profile))
+            AppBarConfiguration(setOf(R.id.home, R.id.profile))
 
         // Set navigation
         setSupportActionBar(appBar)
@@ -81,6 +82,8 @@ class MainActivity : AppCompatActivity() {
             popup.showEntryView() // Show the popup
         }
 
+        Toast.makeText(this, "Logged in as guest", Toast.LENGTH_SHORT)
+            .show()
     }
 
     // Back button logic on app bar

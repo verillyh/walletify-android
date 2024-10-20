@@ -21,17 +21,11 @@ class UserRepository(application: Application) {
     private val transactionDao: TransactionDao = WalletifyDatabase.getDatabase(application).transactionDao()
     private val walletRepository: WalletRepository
     private val _userStateFlow = MutableStateFlow<User?>(null)
-    private val _transactionStateFlow = MutableStateFlow<List<Transaction>?>(null)
-    private val _walletStateFlow = MutableStateFlow<List<Wallet>?>(null)
-    private val _activeWalletStateFlow = MutableStateFlow<Wallet?>(null)
-    val activeWalletStateFlow: StateFlow<Wallet?> = _activeWalletStateFlow.asStateFlow()
-    val walletStateFlow: StateFlow<List<Wallet>?> = _walletStateFlow.asStateFlow()
-    val transactionStateFlow = _transactionStateFlow.asStateFlow()
+    val activeWalletStateFlow: StateFlow<Wallet?>
+    val walletStateFlow: StateFlow<List<Wallet>?>
+    val transactionStateFlow: StateFlow<List<Transaction>?>
     val userStateFlow: StateFlow<User?> = _userStateFlow.asStateFlow()
     val userScope = CoroutineScope(Dispatchers.IO)
-    val transactionScope = CoroutineScope(Dispatchers.Default)
-    val walletScope = CoroutineScope(Dispatchers.Default)
-    val activeWalletScope = CoroutineScope(Dispatchers.Default)
 
     // Singleton instance of UserRepository
     companion object {
@@ -49,37 +43,27 @@ class UserRepository(application: Application) {
         // Initialize wallet repository
         walletRepository = WalletRepository(walletDao, transactionDao, userStateFlow)
 
-
         // Collect state flow from guest as default
         userScope.launch {
             addGuest()
             updateUserStateFlow(1)
         }
 
-        // Start collecting transaction flow
-        transactionScope.launch {
-            walletRepository.transactionStateFlow.collect {transactionLists ->
-                _transactionStateFlow.value = transactionLists
-            }
-        }
-
-        // Start collecting wallet list flow
-        walletScope.launch {
-            walletRepository.walletStateFlow.collect {walletLists ->
-                _walletStateFlow.value = walletLists
-            }
-        }
-
-        // Start collecting active wallet flow
-        activeWalletScope.launch {
-            walletRepository.activeWalletStateFlow.collect { walletFlow ->
-                _activeWalletStateFlow.value = walletFlow
-            }
-        }
+        // Pass state flows from wallet repository to here
+        transactionStateFlow = walletRepository.transactionStateFlow
+        walletStateFlow = walletRepository.walletStateFlow
+        activeWalletStateFlow = walletRepository.activeWalletStateFlow
     }
 
     suspend fun addTransaction(transaction: Transaction): Boolean {
-        return walletRepository.addTransaction(transaction)
+        val success = walletRepository.addTransaction(transaction)
+        if (success) {
+            Log.i("Walletify", "Transaction added!")
+        }
+        else {
+            Log.i("Walletify", "Transaction failed")
+        }
+        return success
     }
 
     fun changeActiveWalletState(walletName: String) {
@@ -87,9 +71,14 @@ class UserRepository(application: Application) {
     }
 
     suspend fun transfer(amount: Double, fromWalletName: String, toWalletName: String): Boolean {
-        // TODO: Double check
         val success = walletRepository.transfer(amount, fromWalletName, toWalletName)
-        return success ?: false
+        if (success) {
+            Log.i("Walletify", "Transferred from $fromWalletName to $toWalletName successful")
+        }
+        else {
+            Log.i("Walletify", "Transfer failed")
+        }
+        return success
     }
 
     suspend fun addWallet(wallet: Wallet): Boolean {
@@ -118,10 +107,10 @@ class UserRepository(application: Application) {
 
         val success = walletRepository.addWallet(defaultWallet)
         if (success) {
-            Log.i("Walletify", "Failed to add default wallet")
+            Log.i("Walletify", "User and default wallet added")
         }
         else {
-            Log.i("Walletify", "User and default wallet added")
+            Log.i("Walletify", "Failed to add default wallet")
         }
 
         return success
@@ -154,7 +143,6 @@ class UserRepository(application: Application) {
                 return@withContext false
             }
 
-            // TODO: Redundant??
             val success = updateUserStateFlow(id)
             if (success) {
                 Log.i("Walletify", "User details updated")
@@ -167,11 +155,11 @@ class UserRepository(application: Application) {
         }
     }
 
-    suspend fun getUserFromEmail(email: String): User? {
+    private suspend fun getUserFromEmail(email: String): User? {
         return userDao.getUserFromEmail(email)
     }
 
-    fun updateUserStateFlow(id: Long): Boolean  {
+    private fun updateUserStateFlow(id: Long): Boolean  {
         // Cancel previous flow
         userScope.coroutineContext.cancelChildren()
 
@@ -179,23 +167,24 @@ class UserRepository(application: Application) {
         userScope.launch {
             getUserFromId(id).collect {user ->
                 _userStateFlow.value = user
-    //            return@collect true
+                Log.i("Walletify", "Collecting new user state...")
             }
         }
         return true
     }
 
     suspend fun login(email: String, password: String): Boolean {
-        // Use main thread, because we're updating state
         val user = getUserFromEmail(email)
 
         if (user == null) {
+            Log.i("Walletify", "User not found")
             return false
         }
         // Else if found
         else if (user.password == password) {
             // Update all state flows
             updateUserStateFlow(user.id)
+            Log.i("Walletify", "User logged in")
             return true
         }
         // Default case
@@ -207,7 +196,7 @@ class UserRepository(application: Application) {
     suspend fun signout(): Boolean {
         return withContext(Dispatchers.IO) {
             val guestUser = getUserFromId(1).first()
-
+            Log.i("Walletify", "User signed out...")
             updateUserStateFlow(guestUser.id)
         }
     }
@@ -223,6 +212,7 @@ class UserRepository(application: Application) {
         }
 
         signout()
+        Log.i("Walletify", "User: $userId deleted")
         return true
     }
 }

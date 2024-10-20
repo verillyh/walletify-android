@@ -1,7 +1,6 @@
 package com.example.walletify.ui
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.walletify.data.UserRepository
@@ -36,7 +35,6 @@ class WalletViewModel(application: Application): AndroidViewModel(application) {
                 walletState?.let {
                     _allUserWallets.value = walletState
                 }
-                Log.i("Walletify", "Wallet list state changed")
             }
         }
 

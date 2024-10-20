@@ -1,18 +1,13 @@
 package com.example.walletify.data
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-public interface UserDao {
-
-    @Query("SELECT * FROM users")
-    fun getAllData(): Flow<List<User>>
-
+interface UserDao {
     @Query("SELECT * FROM users WHERE email LIKE :email")
     suspend fun getUserFromEmail(email: String): User?
 
@@ -27,7 +22,7 @@ public interface UserDao {
     suspend fun updateUserDetails(fullName: String, email: String, phoneNumber: String, id: Long): Int
 
     // Return long, to check if successfully inserted or not
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(user: User): Long
 
     @Query("DELETE from users WHERE id LIKE :userId")

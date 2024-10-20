@@ -1,7 +1,6 @@
 package com.example.walletify
 
 import android.content.Context
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -77,7 +76,7 @@ class Popup(
                 when (checkedId) {
                     R.id.entry_expense -> switchEntryView(layoutContainer, expenseLayout)
                     R.id.entry_income -> switchEntryView(layoutContainer, incomeLayout)
-                    R.id.entry_budget -> switchEntryView(layoutContainer, budgetLayout)
+//                    R.id.entry_budget -> switchEntryView(layoutContainer, budgetLayout)
                 }
             }
         }
@@ -101,7 +100,6 @@ class Popup(
             true
         )
 
-        Log.i("Walletify", optionsLayout.toString())
         val layoutContainer = optionsLayout.findViewById<LinearLayout>(R.id.entry_container)
         val changeLayout = LayoutInflater.from(context).inflate(R.layout.change_wallet, layoutContainer, false)
         val transferLayout = LayoutInflater.from(context).inflate(R.layout.transfer_wallet, layoutContainer, false)

@@ -1,5 +1,6 @@
 package com.example.walletify.data
 
+import android.util.Log
 import com.example.walletify.TransactionCategory
 import com.example.walletify.TransactionType
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +27,7 @@ class TransactionRepository(
             activeWalletStateFlow.collect { state ->
                 if (state != null) {
                     updateTransactionFlow(state.id)
+                    Log.i("Walletify", "Collecting transactions...")
                 }
             }
         }

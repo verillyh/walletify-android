@@ -1,5 +1,6 @@
 package com.example.walletify.data
 
+import android.util.Log
 import com.example.walletify.TransactionCategory
 import com.example.walletify.TransactionType
 import kotlinx.coroutines.CoroutineScope
@@ -11,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class WalletRepository(
     private val walletDao: WalletDao,
@@ -20,14 +20,11 @@ class WalletRepository(
 ) {
     private val transactionRepository: TransactionRepository
     private val _activeWalletStateFlow = MutableStateFlow<Wallet?>(null)
-    private val _transactionStateFlow = MutableStateFlow<List<Transaction>?>(null)
     private val _walletStateFlow = MutableStateFlow<List<Wallet>?>(null)
     val activeWalletStateFlow: StateFlow<Wallet?> = _activeWalletStateFlow.asStateFlow()
-    val transactionStateFlow: StateFlow<List<Transaction>?> = _transactionStateFlow.asStateFlow()
     val walletStateFlow: StateFlow<List<Wallet>?> = _walletStateFlow.asStateFlow()
+    val transactionStateFlow: StateFlow<List<Transaction>?>
     val walletScope = CoroutineScope(Dispatchers.IO)
-    // TODO: Maybe use wallet scope instead? Or should use Dispatchers.Default?
-    val transactionScope = CoroutineScope(Dispatchers.IO)
     // Use default, since we're not doing any database calls, nor updating UI
     val activeWalletScope = CoroutineScope(Dispatchers.Default)
 
@@ -40,16 +37,13 @@ class WalletRepository(
             userStateFlow.collect {
                 if (it != null) {
                     updateWalletState(it.id)
+                    Log.i("Walletify", "Collecting wallet state...")
                 }
             }
         }
 
-        // Listen for new transactions
-        transactionScope.launch {
-            transactionRepository.transactionStateFlow.collect { transactionLists ->
-                _transactionStateFlow.value = transactionLists
-            }
-        }
+        // Get transaction state flow from transaction repository
+        transactionStateFlow = transactionRepository.transactionStateFlow
     }
 
     private fun getWalletsFromUserId(userId: Long): Flow<List<Wallet>> {
@@ -66,6 +60,7 @@ class WalletRepository(
         activeWalletScope.launch {
             _walletStateFlow.collect { state ->
                 _activeWalletStateFlow.value = _walletStateFlow.first()?.find { it.walletName == walletName }
+                Log.i("Walletify", "Active wallet state changed")
             }
         }
     }
@@ -110,6 +105,13 @@ class WalletRepository(
             note = "Initial Balance",
             walletId = walletId
         ))
+
+        if (success) {
+            Log.i("Walletify", "Wallet added")
+        }
+        else {
+            Log.i("Walletify", "Fail to add wallet")
+        }
 
         return success
     }

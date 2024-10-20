@@ -67,7 +67,6 @@ class Login : Fragment() {
                 if (successful) {
                     Toast.makeText(activity, "Logged in!", Toast.LENGTH_SHORT)
                         .show()
-                    Log.i("Walletify", "User logged in")
                     navController?.navigate(R.id.profile)
                 }
                 else {

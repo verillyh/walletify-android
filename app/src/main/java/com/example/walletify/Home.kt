@@ -69,7 +69,7 @@ class Home : Fragment() {
             }
         }
 
-        // Modify list if there is an update
+        // Update list if there is an update
         lifecycleScope.launch {
             transactionViewModel.allUserTransactions.collect { transactionState ->
                 transactionState?.let { adapter.setData(it) }
