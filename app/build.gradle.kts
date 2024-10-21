@@ -48,6 +48,7 @@ dependencies {
     // Room
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.espresso.contrib)
     kapt("androidx.room:room-compiler:2.6.1")
     androidTestImplementation(libs.androidx.room.testing)
 

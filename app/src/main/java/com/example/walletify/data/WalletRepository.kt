@@ -59,10 +59,14 @@ class WalletRepository(
         // Search wallet state, and collect wallet based on name
         activeWalletScope.launch {
             _walletStateFlow.collect { state ->
-                _activeWalletStateFlow.value = _walletStateFlow.first()?.find { it.walletName == walletName }
+                _activeWalletStateFlow.value = getWalletByName(walletName)
                 Log.i("Walletify", "Active wallet state changed")
             }
         }
+    }
+
+    private suspend fun getWalletByName(walletName: String): Wallet? {
+        return _walletStateFlow.first()?.find { it.walletName == walletName }
     }
 
     // Wallet list -> Use when changing user
@@ -130,40 +134,46 @@ class WalletRepository(
 
     suspend fun transfer(amount: Double, fromWalletName: String, toWalletName: String): Boolean {
         // Get ids
-        val fromWalletId = getWalletId(fromWalletName)
-        val toWalletId = getWalletId(toWalletName)
+        val fromWallet = getWalletByName(fromWalletName)
+        val toWallet = getWalletByName(toWalletName)
 
-        // Process transfer on each wallet
-        val success = transactionRepository.transfer(amount, fromWalletId, toWalletId, fromWalletName, toWalletName)
+        val success = transactionRepository.transfer(amount,
+            fromWallet?.id ?: -1,
+            toWallet?.id ?: -1,
+            fromWalletName,
+            toWalletName
+        )
 
-        if (!success) {
+        if (success == false || success == null) {
             return false
         }
 
         // TODO: Maybe have this automatically done when there's an entry in transaction?
-        // Update wallet after transaction
-        activeWalletStateFlow.value?.apply {
+        // Update source wallet
+        fromWallet?.let {
             val updateSourceWalletSuccess = updateWallet(
-                balance = balance - amount,
-                expense = expense + amount,
-                income = income,
-                walletId = fromWalletId
+                balance = fromWallet.balance - amount,
+                expense = fromWallet.expense + amount,
+                income = fromWallet.income,
+                walletId = fromWallet.id
             )
-
             if (!updateSourceWalletSuccess) {
                 return false
             }
+        }
 
+        // Update destination wallet
+        toWallet?.let {
             val updateDestWalletSuccess = updateWallet(
-                balance = balance + amount,
-                expense = expense,
-                income = income + amount,
-                walletId = toWalletId
+                balance = toWallet.balance + amount,
+                expense = toWallet.expense,
+                income = toWallet.income + amount,
+                walletId = toWallet.id
             )
             return updateDestWalletSuccess
         }
 
-        // If active wallet state is empty, then return false
+        // Return false if fromWallet or toWallet is null
         return false
     }
 
