@@ -12,10 +12,12 @@ import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import com.example.walletify.databinding.FragmentLoginBinding
 import com.example.walletify.ui.UserViewModel
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -46,21 +48,25 @@ class Login : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val layout = inflater.inflate(R.layout.fragment_login, container, false)
+        val loginBinding = FragmentLoginBinding.inflate(inflater, container, false)
+        val layout = loginBinding.root
         val navController = activity?.findNavController(R.id.main_fragment)
         val userViewModel: UserViewModel by activityViewModels()
 
         // Set wallet name to empty when in login page
         activity?.findViewById<MaterialToolbar>(R.id.topAppBar)?.subtitle = ""
 
-
-        layout.findViewById<TextView>(R.id.redirect_to_signup).setOnClickListener {
+        // Redirect to signup when user wants to
+        loginBinding.redirectToSignup.setOnClickListener {
             navController?.navigate(R.id.signup)
         }
-        layout.findViewById<Button>(R.id.login_button).setOnClickListener {
-            val email = layout.findViewById<TextInputEditText>(R.id.email_input_edit_text).text.toString()
-            val password = layout.findViewById<TextInputEditText>(R.id.password_input_edit_text).text.toString()
 
+        // Login logic
+        loginBinding.loginButton.setOnClickListener {
+            val email = loginBinding.emailInputEditText.text.toString()
+            val password = loginBinding.passwordInputEditText.text.toString()
+
+            // Login via viewmodel. Show Toast of the result
             lifecycleScope.launch {
                 val successful = userViewModel.login(email, password)
 
@@ -76,8 +82,6 @@ class Login : Fragment() {
             }
 
         }
-
-
 
         return layout
     }

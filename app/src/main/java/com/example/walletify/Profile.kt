@@ -14,6 +14,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import com.example.walletify.databinding.FragmentProfileBinding
+import com.example.walletify.databinding.ProfileDefaultButtonsBinding
+import com.example.walletify.databinding.SaveChangesButtonBinding
 import com.example.walletify.ui.UserViewModel
 import com.example.walletify.ui.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
@@ -49,23 +52,32 @@ class Profile : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        // TODO: Optimize code
-        val layout = inflater.inflate(R.layout.fragment_profile, container, false)
-        val buttonsContainer = layout.findViewById<LinearLayout>(R.id.profile_buttons_container)
-        val saveChangesButton = inflater.inflate(R.layout.save_changes_button, buttonsContainer, false)
-        val defaultButtons = inflater.inflate(R.layout.profile_default_buttons, buttonsContainer, false)
-        val edit = layout.findViewById<TextView>(R.id.user_edit)
-        val userName = layout.findViewById<TextView>(R.id.user_name)
-        val fullNameInputLayout = layout.findViewById<TextInputLayout>(R.id.full_name_input_layout)
-        val fullNameEditText = layout.findViewById<TextInputEditText>(R.id.full_name_input_edit_text)
-        val emailInputLayout = layout.findViewById<TextInputLayout>(R.id.email_input_layout)
-        val emailEditText = layout.findViewById<TextInputEditText>(R.id.email_input_edit_text)
-        val phoneNumberInputLayout = layout.findViewById<TextInputLayout>(R.id.phone_number_input_layout)
-        val phoneNumberEditText = layout.findViewById<TextInputEditText>(R.id.phone_number_edit_text)
-        val toHide = layout.findViewById<LinearLayout>(R.id.on_edit_hide)
-        val signout = defaultButtons.findViewById<Button>(R.id.signout)
-        val deleteAccount = defaultButtons.findViewById<Button>(R.id.delete_account)
+        // Inflate bindings
+        val profileBinding = FragmentProfileBinding.inflate(layoutInflater, container, false)
+        val saveChangesButtonBinding = SaveChangesButtonBinding.inflate(layoutInflater, container, false)
+        val defaultButtonsBinding = ProfileDefaultButtonsBinding.inflate(layoutInflater, container, false)
+
+        // Set roots
+        val layout = profileBinding.root
+        val saveChangesButton = saveChangesButtonBinding.root
+        val defaultButtons = defaultButtonsBinding.root
+
+        // Profile bindings
+        val buttonsContainer = profileBinding.profileButtonsContainer
+        val edit = profileBinding.userEdit
+        val userName = profileBinding.userName
+        val fullNameInputLayout = profileBinding.fullNameInputLayout
+        val fullNameEditText = profileBinding.fullNameInputEditText
+        val emailInputLayout = profileBinding.emailInputLayout
+        val emailEditText = profileBinding.emailInputEditText
+        val phoneNumberInputLayout = profileBinding.phoneNumberInputLayout
+        val phoneNumberEditText = profileBinding.phoneNumberEditText
+        val toHide = profileBinding.onEditHide
+
+        // Signout bindings
+        val signout = defaultButtonsBinding.signout
+        val deleteAccount = defaultButtonsBinding.deleteAccount
+
         val appBar = activity?.findViewById<MaterialToolbar>(R.id.topAppBar)
         val grayColor = resources.getColor(R.color.gray, null)
         val whiteColor = resources.getColor(R.color.white, null)
@@ -80,6 +92,7 @@ class Profile : Fragment() {
                     navController?.navigate(R.id.login)
                 }
 
+                // Update profile texts
                 userName.text = state.fullName
                 fullNameEditText.setText(state.fullName)
                 emailEditText.setText(state.email)
@@ -132,12 +145,14 @@ class Profile : Fragment() {
             }
         }
 
+        // Confirmation for signup
         signout.setOnClickListener {
             container?.let {
                 MaterialAlertDialogBuilder(it.context)
                     .setTitle(resources.getString(R.string.signout))
                     .setMessage(resources.getString(R.string.signout_confirmation))
                     .setNeutralButton(resources.getString(R.string.cancel)) { dialog, which -> }
+                        // If confirmed, then sign out and let make a Toast
                     .setPositiveButton(resources.getString(R.string.signout)) { dialog, which ->
                         lifecycleScope.launch {
                             val success = userViewModel.signout()

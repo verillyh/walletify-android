@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.walletify.databinding.FragmentHomeBinding
 import com.example.walletify.ui.TransactionsViewModel
 import com.example.walletify.ui.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
@@ -42,11 +43,12 @@ class Home : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val layout = inflater.inflate(R.layout.fragment_home, container, false)
-        val balance = layout.findViewById<TextView>(R.id.current_balance)
-        val expense = layout.findViewById<TextView>(R.id.current_month_expense)
-        val income = layout.findViewById<TextView>(R.id.current_month_income)
-        val transactionList = layout.findViewById<RecyclerView>(R.id.transaction_recycler_view)
+        val homeBinding = FragmentHomeBinding.inflate(inflater, container, false)
+        val layout = homeBinding.root
+        val balance = homeBinding.currentBalance
+        val expense = homeBinding.currentMonthExpense
+        val income = homeBinding.currentMonthIncome
+        val transactionList = homeBinding.transactionRecyclerView
         val transactionViewModel: TransactionsViewModel by activityViewModels()
         val walletViewModel: WalletViewModel by activityViewModels()
         val appBar = activity?.findViewById<MaterialToolbar>(R.id.topAppBar)

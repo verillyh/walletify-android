@@ -12,10 +12,17 @@ import com.example.walletify.data.Transaction
 import com.example.walletify.ui.TransactionsViewModel
 import com.example.walletify.ui.UserViewModel
 import com.example.walletify.data.Wallet
+import com.example.walletify.databinding.AddWalletBinding
+import com.example.walletify.databinding.ChangeWalletBinding
+import com.example.walletify.databinding.EntryExpenseBinding
+import com.example.walletify.databinding.EntryIncomeBinding
+import com.example.walletify.databinding.NewEntryBinding
+import com.example.walletify.databinding.TransferWalletBinding
+import com.example.walletify.databinding.WalletOptionsBinding
 import com.example.walletify.ui.WalletViewModel
-import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
 import java.time.LocalDateTime
 
 class Popup(
@@ -24,11 +31,20 @@ class Popup(
     private val userViewModel: UserViewModel,
     private val walletViewModel: WalletViewModel,
     private val transactionsViewModel: TransactionsViewModel,
-    private val lifecycleScope: LifecycleCoroutineScope
+    private val lifecycleScope: LifecycleCoroutineScope,
+
 ) {
+    private val newEntryBinding = NewEntryBinding.inflate(LayoutInflater.from(context)  )
+    private val expenseBinding =  EntryExpenseBinding.inflate(LayoutInflater.from(context))
+    private val incomeBinding = EntryIncomeBinding.inflate(LayoutInflater.from(context))
+    private val addWalletBinding = AddWalletBinding.inflate(LayoutInflater.from(context))
+    private val transferWalletBinding = TransferWalletBinding.inflate(LayoutInflater.from(context))
+    private val changeWalletBinding = ChangeWalletBinding.inflate(LayoutInflater.from(context))
+    private val walletOptionsBinding = WalletOptionsBinding.inflate(LayoutInflater.from(context))
+
     fun showEntryView() {
         // Initialize variables
-        val entryLayout = LayoutInflater.from(context).inflate(R.layout.new_entry, rootView, false)
+        val entryLayout = newEntryBinding.root
         val popupWindow = PopupWindow(
             entryLayout,
             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -36,14 +52,14 @@ class Popup(
             true
         )
 
-        val layoutContainer = entryLayout.findViewById<LinearLayout>(R.id.entry_container)
-        val expenseLayout = LayoutInflater.from(context).inflate(R.layout.entry_expense, layoutContainer, false)
-        val incomeLayout = LayoutInflater.from(context).inflate(R.layout.entry_income, layoutContainer, false)
-        val budgetLayout = LayoutInflater.from(context).inflate(R.layout.entry_budget, layoutContainer, false)
-        val addCategories = entryLayout.findViewById<MaterialButtonToggleGroup>(R.id.add_categories)
+        val layoutContainer = newEntryBinding.entryContainer
+        val expenseLayout = expenseBinding.root
+        val incomeLayout = incomeBinding.root
+//        val budgetLayout = LayoutInflater.from(context).inflate(R.layout.entry_budget, layoutContainer, false)
+        val addCategories = newEntryBinding.addCategories
 
         // Set expense category input
-        val expenseCategoryDropdown = expenseLayout.findViewById<AutoCompleteTextView>(R.id.expense_category)
+        val expenseCategoryDropdown = expenseBinding.expenseCategory
         // Display all categories except income and transfer
         val expenseCategories = TransactionCategory.entries
             .filter { it.displayName != "Income" && it.displayName != "Transfer" && it.displayName != "Initial Balance"}
@@ -56,19 +72,19 @@ class Popup(
         expenseCategoryDropdown.setText(expenseCategories[0], false)
 
         // On add expense
-        expenseLayout.findViewById<Button>(R.id.entry_expense_add).setOnClickListener {
+        expenseBinding.entryExpenseAdd.setOnClickListener {
             onAddEntry(expenseLayout, TransactionType.EXPENSE)
             popupWindow.dismiss()
         }
 
         // On add income
-        incomeLayout.findViewById<Button>(R.id.entry_income_add).setOnClickListener {
+        incomeBinding.entryIncomeAdd.setOnClickListener {
             onAddEntry(incomeLayout, TransactionType.INCOME)
             popupWindow.dismiss()
         }
 
-        // Expense layout as default
-        switchEntryView(layoutContainer, expenseLayout)
+        // Change wallet as default
+        newEntryBinding.entryExpense.performClick()
 
         // Listen for change in category type
         addCategories.addOnButtonCheckedListener { group, checkedId, isChecked ->
@@ -82,7 +98,7 @@ class Popup(
         }
 
         // Dismiss when cancel is clicked
-        entryLayout.findViewById<ImageView>(R.id.close_popup).setOnClickListener {
+        newEntryBinding.closePopup.setOnClickListener {
             popupWindow.dismiss()
         }
 
@@ -92,40 +108,39 @@ class Popup(
 
     fun showWalletPopup() {
         // Initialize variables
-        val optionsLayout = LayoutInflater.from(context).inflate(R.layout.wallet_options, rootView, false)
         val popupWindow = PopupWindow(
-            optionsLayout,
+            walletOptionsBinding.root,
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.MATCH_PARENT,
             true
         )
 
-        val layoutContainer = optionsLayout.findViewById<LinearLayout>(R.id.entry_container)
-        val changeLayout = LayoutInflater.from(context).inflate(R.layout.change_wallet, layoutContainer, false)
-        val transferLayout = LayoutInflater.from(context).inflate(R.layout.transfer_wallet, layoutContainer, false)
-        val addLayout = LayoutInflater.from(context).inflate(R.layout.add_wallet, layoutContainer, false)
-        val walletOptions = optionsLayout.findViewById<MaterialButtonToggleGroup>(R.id.wallet_options)
+        val layoutContainer = walletOptionsBinding.entryContainer
+        val changeLayout = changeWalletBinding.root
+        val transferLayout = transferWalletBinding.root
+        val addLayout = addWalletBinding.root
+        val walletOptions = walletOptionsBinding.walletOptions
 
         inflateAllWalletsAsOptions(changeLayout, R.id.change_wallet_dropdown)
         inflateAllWalletsAsOptions(transferLayout, R.id.from_wallet_dropdown)
         inflateAllWalletsAsOptions(transferLayout, R.id.to_wallet_dropdown)
 
         // Change wallet logic
-        changeLayout.findViewById<AutoCompleteTextView>(R.id.change_wallet_dropdown).setOnItemClickListener { parent, view, index, id ->
+        changeWalletBinding.changeWalletDropdown.setOnItemClickListener { parent, view, index, id ->
             val selected = parent.getItemAtPosition(index).toString()
             walletViewModel.changeActiveWallet(selected)
             popupWindow.dismiss()
         }
 
         // Transfer wallet logic
-        transferLayout.findViewById<Button>(R.id.transfer_wallet_add).setOnClickListener {
-            onTransferWallet(transferLayout)
+        transferWalletBinding.transferWalletAdd.setOnClickListener {
+            onTransferWallet()
             popupWindow.dismiss()
         }
 
         // Add wallet logic
-        addLayout.findViewById<Button>(R.id.add_wallet).setOnClickListener {
-            onAddWallet(addLayout)
+        addWalletBinding.addWallet.setOnClickListener {
+            onAddWallet()
             popupWindow.dismiss()
         }
 
@@ -144,7 +159,7 @@ class Popup(
         }
 
         // Dismiss when cancel is clicked
-        optionsLayout.findViewById<ImageView>(R.id.close_wallet_popup)?.setOnClickListener {
+        walletOptionsBinding.closeWalletPopup.setOnClickListener {
             popupWindow.dismiss()
         }
 
@@ -152,10 +167,10 @@ class Popup(
         popupWindow.showAtLocation(rootView, Gravity.CENTER, 0, 0)
     }
 
-    private fun onTransferWallet(layout: View) {
-        val amount = layout.findViewById<TextInputEditText>(R.id.amount_input_edit_text).text.toString().toDouble()
-        val fromWalletName = layout.findViewById<AutoCompleteTextView>(R.id.from_wallet_dropdown).text.toString()
-        val toWalletName = layout.findViewById<AutoCompleteTextView>(R.id.to_wallet_dropdown).text.toString()
+    private fun onTransferWallet() {
+        val amount = transferWalletBinding.amountInputEditText.text.toString().toDouble()
+        val fromWalletName = transferWalletBinding.fromWalletDropdown.text.toString()
+        val toWalletName = transferWalletBinding.toWalletDropdown.text.toString()
 
 
         lifecycleScope.launch {
@@ -173,6 +188,7 @@ class Popup(
     }
 
     private fun inflateAllWalletsAsOptions(layout: View, optionId: Int) {
+        // Use findViewById for dynamic access
         val dropdown = layout.findViewById<AutoCompleteTextView>(optionId)
 
         // Get wallet list from viewmodel, and show as option
@@ -200,9 +216,9 @@ class Popup(
         layoutContainer.addView(layout)
     }
 
-    private fun onAddWallet(parentLayout: View) {
-        val walletInitialBalance = parentLayout.findViewById<TextInputEditText>(R.id.amount_input_edit_text).text.toString().toDouble()
-        val walletName = parentLayout.findViewById<TextInputEditText>(R.id.wallet_input_edit_text).text.toString()
+    private fun onAddWallet() {
+        val walletInitialBalance = addWalletBinding.amountInputEditText.text.toString().toDouble()
+        val walletName = addWalletBinding.walletInputEditText.text.toString()
         val userId = userViewModel.uiState.value.id
 
         val wallet = Wallet(
@@ -230,13 +246,14 @@ class Popup(
     }
 
     private fun onAddEntry(parentLayout: View, type: TransactionType) {
+        // Use findViewById for dynamic access
         val amount = parentLayout.findViewById<TextInputEditText>(R.id.amount_input_edit_text).text.toString()
         val note = parentLayout.findViewById<TextInputEditText>(R.id.note_input_edit_text).text.toString()
         var category = TransactionCategory.INCOME
 
         // If of type expense, populate category text field
         if (type == TransactionType.EXPENSE) {
-            val selected = parentLayout.findViewById<AutoCompleteTextView>(R.id.expense_category).text.toString()
+            val selected = expenseBinding.expenseCategory.text.toString()
             if (selected == "") {
                 Toast.makeText(context, "Please select a category", Toast.LENGTH_SHORT)
                     .show()

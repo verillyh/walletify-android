@@ -5,16 +5,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.example.walletify.data.User
+import com.example.walletify.databinding.FragmentSignupBinding
 import com.example.walletify.ui.UserViewModel
-import com.example.walletify.ui.WalletViewModel
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
@@ -45,23 +43,23 @@ class Signup : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val layout = inflater.inflate(R.layout.fragment_signup, container, false)
+        val signupBinding = FragmentSignupBinding.inflate(inflater, container, false)
+        val layout = signupBinding.root
         val userViewModel: UserViewModel by activityViewModels()
-        val walletViewModel: WalletViewModel by activityViewModels()
-        val signup_button = layout.findViewById<Button>(R.id.signup_button)
+        val signup_button = signupBinding.signupButton
 
         activity?.findViewById<MaterialToolbar>(R.id.topAppBar)?.subtitle = ""
 
         signup_button.setOnClickListener {
             // TODO: User validation
             val userEmail =
-                layout.findViewById<TextInputEditText>(R.id.email_input_edit_text).text.toString()
+                signupBinding.emailInputEditText.text.toString()
             val userPhoneNumber =
-                layout.findViewById<TextInputEditText>(R.id.phone_number_edit_text).text.toString()
+                signupBinding.phoneNumberEditText.text.toString()
             val userFullName =
-                layout.findViewById<TextInputEditText>(R.id.full_name_input_edit_text).text.toString()
+                signupBinding.fullNameInputEditText.text.toString()
             val userPassword =
-                layout.findViewById<TextInputEditText>(R.id.password_input_edit_text).text.toString()
+                signupBinding.passwordInputEditText.text.toString()
 
             lifecycleScope.launch {
                 // Add new user
