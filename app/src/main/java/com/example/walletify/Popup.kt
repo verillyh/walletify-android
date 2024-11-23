@@ -84,10 +84,11 @@ class Popup(
         }
 
         // Change wallet as default
-        newEntryBinding.entryExpense.performClick()
+        switchEntryView(layoutContainer, expenseLayout)
+        addCategories.check(R.id.entry_expense)
 
         // Listen for change in category type
-        addCategories.addOnButtonCheckedListener { group, checkedId, isChecked ->
+        addCategories.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked){
                 when (checkedId) {
                     R.id.entry_expense -> switchEntryView(layoutContainer, expenseLayout)
@@ -145,10 +146,11 @@ class Popup(
         }
 
         // Expense layout as default
+        walletOptions.check(R.id.change_wallet)
         switchEntryView(layoutContainer, changeLayout)
 
         // Listen for change in category type
-        walletOptions.addOnButtonCheckedListener { group, checkedId, isChecked ->
+        walletOptions.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked){
                 when (checkedId) {
                     R.id.change_wallet -> switchEntryView(layoutContainer, changeLayout)

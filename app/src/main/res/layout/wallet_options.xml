@@ -47,6 +47,7 @@
             android:layout_marginTop="20dp"
             android:layout_marginBottom="5dp"
             app:checkedButton="@id/change_wallet"
+            app:selectionRequired="true"
             app:singleSelection="true" >
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/change_wallet"
